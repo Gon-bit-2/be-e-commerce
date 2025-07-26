@@ -1,7 +1,9 @@
 import mongoose from 'mongoose'
 import 'dotenv/config'
 import { countConnection } from '~/helpers/check.connect'
-const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@shopdev.iphmauu.mongodb.net/`
+import shopModel from '~/model/shop.model'
+import keyTokenModel from '~/model/keytoken.model'
+const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@shopdev.iphmauu.mongodb.net/shopDEV` //
 class Database {
   constructor() {
     this.connect()
@@ -14,6 +16,12 @@ class Database {
     } catch (error) {
       console.log('Connected Failed ', error)
     }
+  }
+  get shop() {
+    return shopModel
+  }
+  get token() {
+    return keyTokenModel
   }
 }
 const database = new Database()
