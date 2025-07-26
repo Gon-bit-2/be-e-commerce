@@ -3,6 +3,7 @@ import 'dotenv/config'
 import { countConnection } from '~/helpers/check.connect'
 import shopModel from '~/model/shop.model'
 import keyTokenModel from '~/model/keytoken.model'
+import apiKeyModel from '~/model/apikey.model'
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@shopdev.iphmauu.mongodb.net/shopDEV` //
 class Database {
   constructor() {
@@ -22,6 +23,9 @@ class Database {
   }
   get token() {
     return keyTokenModel
+  }
+  get apiKey() {
+    return apiKeyModel
   }
 }
 const database = new Database()
