@@ -59,4 +59,7 @@ const authentication = asyncHandle(async (req: Request, res: Response, next: Nex
     throw new AuthFailureError('Invalid Token')
   }
 })
-export { createTokenPair, authentication }
+const verifyJWT = async (token: string, keySecret: string) => {
+  return await jwt.verify(token, keySecret)
+}
+export { createTokenPair, authentication, verifyJWT }

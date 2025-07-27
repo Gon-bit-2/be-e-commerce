@@ -24,6 +24,15 @@ class KeyTokenService {
   async removeKeyById(id: string) {
     return await database.token.deleteOne({ _id: new Types.ObjectId(id) })
   }
+  async findByRefreshTokenUsed(refreshToken: string) {
+    return await database.token.findOne({ refreshTokensUsed: refreshToken }).lean()
+  }
+  async findByRefreshToken(refreshToken: string) {
+    return await database.token.findOne({ refreshToken: refreshToken })
+  }
+  async deleteKeyById(userId: string) {
+    return await database.token.deleteOne({ userId })
+  }
 }
 const keyTokenService = new KeyTokenService()
 export default keyTokenService

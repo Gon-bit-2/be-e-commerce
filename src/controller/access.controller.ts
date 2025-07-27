@@ -28,6 +28,14 @@ class AccessController {
       metadata: handleLogout
     }).send(res)
   }
+
+  handlerRefreshToken = async (req: Request, res: Response) => {
+    const handleGetToken = await accessService.handlerRefreshToken(req.body.refreshToken)
+    new SuccessResponse({
+      message: 'Get token success',
+      metadata: handleGetToken
+    }).send(res)
+  }
 }
 
 const accessController = new AccessController()

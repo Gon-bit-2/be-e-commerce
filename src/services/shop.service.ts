@@ -1,6 +1,6 @@
 import database from '~/db/database'
 
-const findEmailById = async ({
+const findByEmail = async ({
   email,
   select = {
     name: 1,
@@ -10,6 +10,6 @@ const findEmailById = async ({
     roles: 1
   }
 }: any) => {
-  return await database.shop.findOne({ email }).select(select).lean()
+  return await database.shop.findOne({ email }).select(select)
 }
-export { findEmailById }
+export { findByEmail }

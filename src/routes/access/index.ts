@@ -11,5 +11,5 @@ router.post('/shop/login', accessController.login)
 router.use(authentication)
 //
 router.post('/shop/logout', accessController.logout)
-
+router.post('/shop/handlerRefreshToken', accessController.handlerRefreshToken)
 export default router
