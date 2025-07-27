@@ -1,8 +1,10 @@
+import { IKeyToken } from '~/model/keytoken.model'
 
 type ApiKeyObject = any
 
-declare namespace Express {
-  export interface Request {
+declare module 'express-serve-static-core' {
+  interface Request {
     objKey?: ApiKeyObject
+    keyStore?: any
   }
 }

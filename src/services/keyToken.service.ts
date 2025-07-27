@@ -1,3 +1,4 @@
+import { Types } from 'mongoose'
 import database from '~/db/database'
 interface IKey {
   userId: string
@@ -16,6 +17,12 @@ class KeyTokenService {
     } catch (error) {
       return error
     }
+  }
+  async findByUserId(userId: string) {
+    return await database.token.findOne({ userId }).lean()
+  }
+  async removeKeyById(id: string) {
+    return await database.token.deleteOne({ _id: new Types.ObjectId(id) })
   }
 }
 const keyTokenService = new KeyTokenService()

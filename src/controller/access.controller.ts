@@ -20,6 +20,14 @@ class AccessController {
       metadata: handleLogin
     }).send(res)
   }
+
+  logout = async (req: Request, res: Response) => {
+    const handleLogout = await accessService.logout(req.keyStore)
+    new SuccessResponse({
+      message: 'Logout success',
+      metadata: handleLogout
+    }).send(res)
+  }
 }
 
 const accessController = new AccessController()

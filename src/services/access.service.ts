@@ -35,11 +35,14 @@ class AccessService {
       const privateKey = crypto.randomBytes(64).toString('hex')
       const publicKey = crypto.randomBytes(64).toString('hex')
       console.log({ privateKey, publicKey })
+      //create token pair
+      const tokens = await createTokenPair({ userId: newShop._id, email }, publicKey, privateKey)
       //lưu vào db
       const keyStore = await keyTokenService.createKeyToken({
         userId: newShop._id.toString(),
         publicKey,
-        privateKey
+        privateKey,
+        refreshToken: tokens.refreshToken
       })
       console.log('Key Store>>>>', keyStore)
 
@@ -50,8 +53,6 @@ class AccessService {
         }
       }
 
-      //create token pair
-      const tokens = await createTokenPair({ userId: newShop._id, email }, publicKey, privateKey)
       console.log(`create token successfully`, tokens)
       return {
         code: 201,
@@ -67,26 +68,39 @@ class AccessService {
     }
   }
   login = async ({ email, password, refreshToken = null }: any) => {
+    // 1. Tìm shop dựa trên email
     const foundShop = await findEmailById({ email })
-    if (!foundShop) {
-      throw new BadRequestError('Shop not registered')
-    }
+    if (!foundShop) throw new BadRequestError('Shop chưa được đăng ký')
+
+    // 2. So khớp mật khẩu
     const isMatch = await comparePassword(password, foundShop.password)
-    if (!isMatch) throw new AuthFailureError('Authentication Error')
-    //
+    if (!isMatch) throw new AuthFailureError('Sai thông tin xác thực')
+
+    // 3. Tạo privateKey và publicKey mới
     const privateKey = crypto.randomBytes(64).toString('hex')
     const publicKey = crypto.randomBytes(64).toString('hex')
-    const tokens = await createTokenPair({ userId: foundShop._id }, publicKey, privateKey)
+
+    // 4. Tạo cặp token mới
+    const tokens = await createTokenPair({ userId: foundShop._id, email }, publicKey, privateKey)
+
+    // 5. Lưu hoặc cập nhật key store với thông tin mới
     await keyTokenService.createKeyToken({
       userId: foundShop._id.toString(),
       privateKey,
       publicKey,
       refreshToken: tokens.refreshToken
     })
+
     return {
       shop: getInfoData({ fields: ['_id', 'name', 'email'], object: foundShop }),
       tokens
     }
+  }
+  logout = async (keyStore: any) => {
+    const delKey = await keyTokenService.removeKeyById(keyStore._id)
+    console.log('delete key >>>', delKey)
+
+    return delKey
   }
 }
 

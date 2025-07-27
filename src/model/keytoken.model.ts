@@ -1,8 +1,15 @@
 'use strict'
 
-import { model, Schema } from 'mongoose'
+import { model, Schema, Types } from 'mongoose'
 const DOCUMENT_NAME = 'Key'
 const COLLECTION_NAME = 'Keys'
+export interface IKeyToken extends Document {
+  userId: Types.ObjectId
+  publicKey: string
+  privateKey: string
+  refreshTokensUsed: string[]
+  refreshToken: string
+}
 const keyTokenSchema = new Schema(
   {
     userId: {
