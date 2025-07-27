@@ -6,8 +6,6 @@ class ApiKey {
   async createApiKey() {
     const newKey = crypto.randomBytes(64).toString('hex')
     const apiKey = await database.apiKey.create({ key: newKey, permissions: '0000' })
-    console.log('API_KEY>>', apiKey)
-
     return apiKey
   }
   async findById(key: string) {

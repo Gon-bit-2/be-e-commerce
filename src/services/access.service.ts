@@ -1,10 +1,11 @@
 import database from '~/db/database'
-import { hashPassword } from '~/utils/hashPassword'
+import { comparePassword, hashPassword } from '~/utils/hashPassword'
 import crypto from 'crypto'
 import keyTokenService from '~/services/keyToken.service'
 import { createTokenPair } from '~/utils/auth'
 import { getInfoData } from '~/utils/info'
-import { BadRequestError, ConFlictRequestError } from '~/middleware/error.middleware'
+import { AuthFailureError, BadRequestError } from '~/middleware/error.middleware'
+import { findEmailById } from '~/services/shop.service'
 interface ISignUp {
   name: string
   email: string
@@ -19,7 +20,6 @@ enum RoleShop {
 }
 class AccessService {
   sigUp = async ({ name, email, password }: ISignUp) => {
-    // try {
     const holderShop = await database.shop.findOne({ email }).lean()
     if (holderShop) {
       throw new BadRequestError('Error:Shop already registered')
@@ -41,6 +41,7 @@ class AccessService {
         publicKey,
         privateKey
       })
+      console.log('Key Store>>>>', keyStore)
 
       if (!keyStore) {
         return {
@@ -64,13 +65,28 @@ class AccessService {
       code: 200,
       metadata: null
     }
-    // } catch (error) {
-    //   return {
-    //     code: 'xxx',
-    //     message: error,
-    //     status: 'error'
-    //   }
-    // }
+  }
+  login = async ({ email, password, refreshToken = null }: any) => {
+    const foundShop = await findEmailById({ email })
+    if (!foundShop) {
+      throw new BadRequestError('Shop not registered')
+    }
+    const isMatch = await comparePassword(password, foundShop.password)
+    if (!isMatch) throw new AuthFailureError('Authentication Error')
+    //
+    const privateKey = crypto.randomBytes(64).toString('hex')
+    const publicKey = crypto.randomBytes(64).toString('hex')
+    const tokens = await createTokenPair({ userId: foundShop._id }, publicKey, privateKey)
+    await keyTokenService.createKeyToken({
+      userId: foundShop._id.toString(),
+      privateKey,
+      publicKey,
+      refreshToken: tokens.refreshToken
+    })
+    return {
+      shop: getInfoData({ fields: ['_id', 'name', 'email'], object: foundShop }),
+      tokens
+    }
   }
 }
 

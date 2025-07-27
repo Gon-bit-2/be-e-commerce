@@ -1,12 +1,8 @@
 'use strict'
-const STATUS_CODE = {
-  FORBIDDEN: 403,
-  CONFLICT: 409
-}
-const REASON_STATUS_CODE = {
-  FORBIDDEN: 'Bed Request Error',
-  CONFLICT: 'CONFLICT Error'
-}
+
+import { reasonPhrases } from '~/utils/reasonPhrases'
+import { statusCodes } from '~/utils/statusCodes'
+
 class ErrorResponse extends Error {
   status: number
 
@@ -16,15 +12,18 @@ class ErrorResponse extends Error {
   }
 }
 class ConFlictRequestError extends ErrorResponse {
-  constructor(message = REASON_STATUS_CODE.CONFLICT, statusCode = STATUS_CODE.CONFLICT) {
+  constructor(message = reasonPhrases.CONFLICT, statusCode = statusCodes.CONFLICT) {
     super(message, statusCode)
   }
 }
 class BadRequestError extends ErrorResponse {
-  constructor(message = REASON_STATUS_CODE.FORBIDDEN, statusCode = STATUS_CODE.FORBIDDEN) {
+  constructor(message = reasonPhrases.FORBIDDEN, statusCode = statusCodes.FORBIDDEN) {
     super(message, statusCode)
   }
 }
-const badRequestError = new BadRequestError()
-const conFlictRequestError = new ConFlictRequestError()
-export { BadRequestError, ConFlictRequestError }
+class AuthFailureError extends ErrorResponse {
+  constructor(message = reasonPhrases.UNAUTHORIZED, statusCode = statusCodes.UNAUTHORIZED) {
+    super(message, statusCode)
+  }
+}
+export { BadRequestError, ConFlictRequestError, AuthFailureError }

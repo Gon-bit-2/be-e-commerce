@@ -1,6 +1,7 @@
 'use strict'
 
 import { NextFunction, RequestHandler, Request, Response } from 'express'
+import { SuccessResponse } from '~/middleware/success.response'
 import accessService from '~/services/access.service'
 
 class AccessController {
@@ -11,6 +12,13 @@ class AccessController {
       code: '20001',
       handleSignUp
     })
+  }
+
+  login = async (req: Request, res: Response) => {
+    const handleLogin = await accessService.login(req.body)
+    new SuccessResponse({
+      metadata: handleLogin
+    }).send(res)
   }
 }
 
