@@ -6,7 +6,6 @@ import { createTokenPair, verifyJWT } from '~/utils/auth'
 import { getInfoData } from '~/utils/info'
 import { AuthFailureError, BadRequestError, ForbiddenError } from '~/middleware/error.middleware'
 import { findByEmail } from '~/services/shop.service'
-import e from 'express'
 interface ISignUp {
   name: string
   email: string

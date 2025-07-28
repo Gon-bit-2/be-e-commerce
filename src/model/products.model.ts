@@ -1,9 +1,31 @@
 'use strict'
 
-import { model, Schema } from 'mongoose'
+import { model, Schema, Types } from 'mongoose'
 const DOCUMENT_NAME = 'Product'
 const COLLECTION_NAME = 'Products'
-const productSchema = new Schema(
+export type ProductType = 'Electronics' | 'Clothing' | 'Furniture'
+
+export interface IProduct {
+  product_name: string
+  product_thumb: string
+  product_description?: string // Thuộc tính này là tùy chọn (không có "required: true")
+  product_price: number
+  product_quantity: number
+  product_type: ProductType // Sử dụng kiểu đã định nghĩa ở trên
+  product_shop: Types.ObjectId
+  product_attributes: any // Schema.Types.Mixed có thể được biểu diễn bằng "any"
+}
+export interface IClothing {
+  brand: string
+  size: string
+  material: string
+}
+export interface IElectronic {
+  manufacturer: string
+  model: string
+  color: string
+}
+const productSchema = new Schema<IProduct>(
   {
     product_name: {
       type: String,
@@ -41,7 +63,7 @@ const productSchema = new Schema(
   }
 )
 //
-const clothingSchema = new Schema(
+const clothingSchema = new Schema<IClothing>(
   {
     brand: { type: String, required: true },
     size: String,
@@ -54,7 +76,7 @@ const clothingSchema = new Schema(
 )
 
 //
-const electronicSchema = new Schema(
+const electronicSchema = new Schema<IElectronic>(
   {
     manufacturer: { type: String, required: true },
     model: String,
@@ -66,7 +88,7 @@ const electronicSchema = new Schema(
   }
 )
 
-const productModel = model(DOCUMENT_NAME, productSchema)
-const clothingModel = model('Clothing', clothingSchema)
-const electronicModel = model('Electronic', electronicSchema)
+const productModel = model<IProduct>(DOCUMENT_NAME, productSchema)
+const clothingModel = model<IClothing>('Clothing', clothingSchema)
+const electronicModel = model<IElectronic>('Electronic', electronicSchema)
 export { productModel, clothingModel, electronicModel }
