@@ -16,11 +16,13 @@ export interface IProduct {
   product_attributes: any // Schema.Types.Mixed có thể được biểu diễn bằng "any"
 }
 export interface IClothing {
+  product_shop: Types.ObjectId
   brand: string
   size: string
   material: string
 }
 export interface IElectronic {
+  product_shop: Types.ObjectId
   manufacturer: string
   model: string
   color: string
@@ -65,6 +67,10 @@ const productSchema = new Schema<IProduct>(
 //
 const clothingSchema = new Schema<IClothing>(
   {
+    product_shop: {
+      type: Schema.Types.ObjectId,
+      ref: 'Shop'
+    },
     brand: { type: String, required: true },
     size: String,
     material: String
@@ -78,6 +84,10 @@ const clothingSchema = new Schema<IClothing>(
 //
 const electronicSchema = new Schema<IElectronic>(
   {
+    product_shop: {
+      type: Schema.Types.ObjectId,
+      ref: 'Shop'
+    },
     manufacturer: { type: String, required: true },
     model: String,
     color: String

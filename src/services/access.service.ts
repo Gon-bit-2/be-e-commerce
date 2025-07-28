@@ -6,6 +6,7 @@ import { createTokenPair, verifyJWT } from '~/utils/auth'
 import { getInfoData } from '~/utils/info'
 import { AuthFailureError, BadRequestError, ForbiddenError } from '~/middleware/error.middleware'
 import { findByEmail } from '~/services/shop.service'
+import e from 'express'
 interface ISignUp {
   name: string
   email: string
@@ -102,45 +103,26 @@ class AccessService {
 
     return delKey
   }
-  handlerRefreshToken = async (refreshToken: string) => {
-    /*
-    checktoken used
-    */
-    //check token đã được sử dụng chưa
-    const foundToken = await keyTokenService.findByRefreshTokenUsed(refreshToken)
-    if (foundToken) {
-      //decode xem là ai
-      const { userId, email } = (await verifyJWT(refreshToken, foundToken.privateKey)) as {
-        userId: string
-        email: string
-      }
-      console.log('check decode verify>>', { userId, email })
-      //có thì xóa token khỏi keyStore
+  handlerRefreshToken = async ({ refreshToken, user, keyStore }: any) => {
+    const { userId, email } = user
+
+    if (keyStore.refreshTokensUsed.includes(refreshToken)) {
       await keyTokenService.deleteKeyById(userId)
       throw new ForbiddenError('Something wrong happend !! Pls reLogin')
     }
-    //không có, quá ngon
-    const holderToken = await keyTokenService.findByRefreshToken(refreshToken)
-    console.log('check holderShop>>', holderToken)
-
-    if (!holderToken) {
+    if (keyStore.refreshToken !== refreshToken) {
       throw new AuthFailureError('Shop not registered 1')
     }
-    //verify token
-    const { userId, email } = (await verifyJWT(refreshToken, holderToken.privateKey)) as {
-      userId: string
-      email: string
-    }
-    //check userId
+
     const foundShop = await findByEmail({ email })
     if (!foundShop) {
       throw new AuthFailureError('Shop not registered 2')
     }
-    //create token mới
-    const tokens = await createTokenPair({ userId, email }, holderToken.publicKey, holderToken.privateKey)
 
+    //create token mới
+    const tokens = await createTokenPair({ userId, email }, keyStore.publicKey, keyStore.privateKey)
     //update
-    await holderToken.updateOne({
+    await keyStore.updateOne({
       $set: {
         refreshToken: tokens.refreshToken
       },

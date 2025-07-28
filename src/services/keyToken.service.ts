@@ -19,7 +19,7 @@ class KeyTokenService {
     }
   }
   async findByUserId(userId: string) {
-    return await database.token.findOne({ userId }).lean()
+    return await database.token.findOne({ userId })
   }
   async removeKeyById(id: string) {
     return await database.token.deleteOne({ _id: new Types.ObjectId(id) })

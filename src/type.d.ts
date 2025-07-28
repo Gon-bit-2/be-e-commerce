@@ -6,6 +6,8 @@ declare module 'express-serve-static-core' {
   interface Request {
     objKey?: ApiKeyObject
     keyStore?: any
+    user?: any
+    refreshToken?: any
   }
 }
 declare module 'jsonwebtoken' {

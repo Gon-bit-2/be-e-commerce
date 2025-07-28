@@ -2,11 +2,11 @@
 import express from 'express'
 import productController from '~/controller/product.controller'
 
-import { authentication } from '~/utils/auth'
+import { authenticationV2 } from '~/utils/auth'
 const router = express.Router()
 
 //authentication
-router.use(authentication)
+router.use(authenticationV2)
 //
 router.post('', productController.createProduct)
 export default router

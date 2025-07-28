@@ -44,16 +44,16 @@ class Product {
     this.product_attributes = product_attributes
     this.product_quantity = product_quantity
   }
-  async createProduct() {
-    return await database.product.create(this)
+  async createProduct(productId: Types.ObjectId) {
+    return await database.product.create({ ...this, _id: productId })
   }
 }
 //define sub class for different products types clothing
 class Clothing extends Product {
   async createProduct(): Promise<any> {
-    const newClothing = await database.clothing.create(this.product_attributes)
+    const newClothing = await database.clothing.create({ ...this.product_attributes, product_shop: this.product_shop })
     if (!newClothing) throw new BadRequestError('Create new Clothing Error')
-    const newProduct = await super.createProduct()
+    const newProduct = await super.createProduct(newClothing._id)
     if (!newProduct) throw new BadRequestError('Create new Product Error')
     return newProduct
   }
@@ -61,9 +61,12 @@ class Clothing extends Product {
 //define sub class for different products types Electronic
 class Electronic extends Product {
   async createProduct(): Promise<any> {
-    const newElectronic = await database.electronic.create(this.product_attributes)
+    const newElectronic = await database.electronic.create({
+      ...this.product_attributes,
+      product_shop: this.product_shop
+    })
     if (!newElectronic) throw new BadRequestError('Create new Electronic Error')
-    const newProduct = await super.createProduct()
+    const newProduct = await super.createProduct(newElectronic._id)
     if (!newProduct) throw new BadRequestError('Create new Product Error')
     return newProduct
   }

@@ -6,7 +6,8 @@ import keyTokenService from '~/services/keyToken.service'
 const HEADER = {
   API_KEY: 'x-api-key',
   CLIENT_ID: 'x-client-id',
-  AUTHORIZATION: 'authorization'
+  AUTHORIZATION: 'authorization',
+  REFRESHTOKEN: 'refreshtoken'
 }
 const createTokenPair = async (payload: any, publicKey: string, privateKey: string) => {
   const accessToken = await jwt.sign(payload, publicKey, {
@@ -28,13 +29,38 @@ const createTokenPair = async (payload: any, publicKey: string, privateKey: stri
     refreshToken
   }
 }
-const authentication = asyncHandle(async (req: Request, res: Response, next: NextFunction) => {
+
+const authenticationV2 = asyncHandle(async (req: Request, res: Response, next: NextFunction) => {
   const userId = req.headers[HEADER.CLIENT_ID] as string
   if (!userId) throw new AuthFailureError('Invalid Request')
   //
   const keyStore = await keyTokenService.findByUserId(userId)
   if (!keyStore) throw new NotFoundError('Not Found keyStore')
   console.log('Check keyStore>>>:', keyStore)
+
+  if (req.headers[HEADER.REFRESHTOKEN]) {
+    try {
+      const refreshToken = req.headers[HEADER.REFRESHTOKEN]
+      if (!refreshToken || Array.isArray(refreshToken)) throw new AuthFailureError('REFRESHTOKEN IN VALID')
+      const decodeUser = jwt.verify(refreshToken, keyStore.privateKey)
+      if (typeof decodeUser !== 'object' || !decodeUser.userId) {
+        throw new AuthFailureError('Invalid Token Payload')
+      }
+      if (userId !== decodeUser.userId) throw new AuthFailureError('Invalid User')
+      req.user = decodeUser
+      console.log('Check decodeUser>>>:', decodeUser)
+      req.keyStore = keyStore
+      req.refreshToken = refreshToken
+      return next()
+    } catch (error) {
+      if (error instanceof Error)
+        if (error.name === 'TokenExpiredError') {
+          throw new AuthFailureError('Token expired. Please relogin.')
+        }
+      // Các lỗi khác như `JsonWebTokenError` sẽ bị bắt ở đây
+      throw new AuthFailureError('Invalid Token')
+    }
+  }
   //verify token
   const authHeader = req.headers[HEADER.AUTHORIZATION] as string
   if (!authHeader || !authHeader.startsWith('Bearer ')) {
@@ -44,22 +70,8 @@ const authentication = asyncHandle(async (req: Request, res: Response, next: Nex
   // Tách lấy token
   const accessToken = authHeader.split(' ')[1]
   if (!accessToken) throw new AuthFailureError('Invalid Request')
-  try {
-    const decodeUser = jwt.verify(accessToken, keyStore.publicKey) as { userId: string }
-    if (userId !== decodeUser.userId) throw new AuthFailureError('Invalid User')
-    console.log('Check decodeUser>>>:', decodeUser)
-    req.keyStore = keyStore
-    return next()
-  } catch (error) {
-    if (error instanceof Error)
-      if (error.name === 'TokenExpiredError') {
-        throw new AuthFailureError('Token expired. Please relogin.')
-      }
-    // Các lỗi khác như `JsonWebTokenError` sẽ bị bắt ở đây
-    throw new AuthFailureError('Invalid Token')
-  }
 })
 const verifyJWT = async (token: string, keySecret: string) => {
   return await jwt.verify(token, keySecret)
 }
-export { createTokenPair, authentication, verifyJWT }
+export { createTokenPair, verifyJWT, authenticationV2 }
