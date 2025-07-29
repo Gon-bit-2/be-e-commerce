@@ -97,8 +97,23 @@ const electronicSchema = new Schema<IElectronic>(
     collection: 'electronics'
   }
 )
-
+const furnitureSchema = new Schema<IClothing>(
+  {
+    product_shop: {
+      type: Schema.Types.ObjectId,
+      ref: 'Shop'
+    },
+    brand: { type: String, required: true },
+    size: String,
+    material: String
+  },
+  {
+    timestamps: true,
+    collection: 'furniture'
+  }
+)
 const productModel = model<IProduct>(DOCUMENT_NAME, productSchema)
 const clothingModel = model<IClothing>('Clothing', clothingSchema)
 const electronicModel = model<IElectronic>('Electronic', electronicSchema)
-export { productModel, clothingModel, electronicModel }
+const furnitureModel = model('Furniture', furnitureSchema)
+export { productModel, clothingModel, electronicModel, furnitureModel }

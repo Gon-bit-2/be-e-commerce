@@ -10,6 +10,8 @@ class ProductFactory {
         return new Electronic(payload).createProduct()
       case 'Clothing':
         return new Clothing(payload).createProduct()
+      case 'Furniture':
+        return new Furniture(payload).createProduct()
       default:
         throw new BadRequestError(`Invalid Product Type ${type}`)
     }
@@ -72,5 +74,17 @@ class Electronic extends Product {
   }
 }
 
+class Furniture extends Product {
+  async createProduct(): Promise<any> {
+    const newFurniture = await database.furniture.create({
+      ...this.product_attributes,
+      product_shop: this.product_shop
+    })
+    if (!newFurniture) throw new BadRequestError('Create new Electronic Error')
+    const newProduct = await super.createProduct(newFurniture._id)
+    if (!newProduct) throw new BadRequestError('Create new Product Error')
+    return newProduct
+  }
+}
 const productFactory = new ProductFactory()
 export { productFactory }

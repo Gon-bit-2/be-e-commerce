@@ -48,7 +48,6 @@ const authenticationV2 = asyncHandle(async (req: Request, res: Response, next: N
       }
       if (userId !== decodeUser.userId) throw new AuthFailureError('Invalid User')
       req.user = decodeUser
-      console.log('Check decodeUser>>>:', decodeUser)
       req.keyStore = keyStore
       req.refreshToken = refreshToken
       return next()
@@ -70,6 +69,23 @@ const authenticationV2 = asyncHandle(async (req: Request, res: Response, next: N
   // Tách lấy token
   const accessToken = authHeader.split(' ')[1]
   if (!accessToken) throw new AuthFailureError('Invalid Request')
+  try {
+    const decodeUser = jwt.verify(accessToken, keyStore.publicKey)
+    if (typeof decodeUser !== 'object' || !decodeUser.userId) {
+      throw new AuthFailureError('Invalid Token Payload')
+    }
+    if (userId !== decodeUser.userId) throw new AuthFailureError('Invalid User')
+
+    // Gán thông tin vào request và gọi next()
+    req.user = decodeUser
+    req.keyStore = keyStore
+    return next()
+  } catch (error) {
+    if (error instanceof Error && error.name === 'TokenExpiredError') {
+      throw new AuthFailureError('Token expired. Please relogin.')
+    }
+    throw new AuthFailureError('Invalid Token')
+  }
 })
 const verifyJWT = async (token: string, keySecret: string) => {
   return await jwt.verify(token, keySecret)
