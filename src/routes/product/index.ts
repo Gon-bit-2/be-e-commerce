@@ -6,9 +6,12 @@ import { authenticationV2 } from '~/utils/auth'
 const router = express.Router()
 
 router.get('/search/:keySearch', productController.getListSearchProduct)
+router.get('', productController.getListAllProduct)
+router.get('/:id', productController.findProduct)
+
 //authentication
 router.use(authenticationV2)
-//
+//CRUD
 router.post('', productController.createProduct)
 router.post('/publish/:id', productController.publishedProductByShop)
 router.post('/unpublish/:id', productController.unPublishedProductByShop)

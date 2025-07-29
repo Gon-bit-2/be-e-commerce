@@ -5,7 +5,9 @@ import { BadRequestError } from '~/middleware/error.middleware'
 import { IProduct, ProductType } from '~/model/products.model'
 import {
   findAllDraftForShop,
+  findAllProducts,
   findAllPublishForShop,
+  findProduct,
   publishProductByShop,
   searchProductByUser,
   UnPublishProductByShop
@@ -29,6 +31,9 @@ class ProductFactory {
   }
   async UnPublishProductByShop({ product_shop, product_id }: { product_shop: string; product_id: string }) {
     return await UnPublishProductByShop({ product_shop, product_id })
+  }
+  async createUpdateProduct() {
+    return await database.product.find()
   }
   ////
 
@@ -61,6 +66,28 @@ class ProductFactory {
   }) {
     const query = { product_shop, isPublished: true }
     return await findAllPublishForShop({ query, limit, skip })
+  }
+  async findAllProducts({
+    limit = 50,
+    sort = 'ctime',
+    page = 1,
+    filter = { isPublished: true }
+  }: {
+    limit: number
+    sort: string
+    page: number
+    filter: Record<string, any>
+  }) {
+    return await findAllProducts({
+      limit,
+      sort,
+      page,
+      filter,
+      select: ['product_name', 'product_price', 'product_thumb']
+    })
+  }
+  async findProduct(product_id: string) {
+    return await findProduct({ product_id, unSelect: ['__v'] })
   }
   ////
 }

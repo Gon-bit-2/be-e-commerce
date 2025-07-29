@@ -71,6 +71,30 @@ class ProductController {
       metadata: resultsSearchProduct
     }).send(res)
   }
+  /**
+   *
+   * @param req.query chứa các thông tin ví dụ: ?limit=10&page=1
+   */
+  async getListAllProduct(req: Request, res: Response) {
+    const allProduct = await productFactory.findAllProducts({
+      limit: Number(req.query.limit), // Chuyển đổi sang Number, nếu không có sẽ là NaN
+      sort: req.query.sort as string,
+      page: Number(req.query.page),
+      filter: req.query.filter as Record<string, any>
+    })
+    new SuccessResponse({
+      message: 'Get All Product Success',
+      metadata: allProduct
+    }).send(res)
+  }
+  async findProduct(req: Request, res: Response) {
+    const { id } = req.params
+    const product = await productFactory.findProduct(id)
+    new SuccessResponse({
+      message: 'Get  Product Success',
+      metadata: product
+    }).send(res)
+  }
 }
 
 const productController = new ProductController()

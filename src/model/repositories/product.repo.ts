@@ -1,6 +1,7 @@
 'use strict'
 
 import database from '~/db/database'
+import { getSelectData, getUnSelectData } from '~/utils'
 type TQuery = {
   query: Record<string, any>
   limit?: number
@@ -31,6 +32,33 @@ const searchProductByUser = async (keySearch: string) => {
 
   return resultsProduct
 }
+const findAllProducts = async ({
+  limit,
+  sort,
+  page,
+  filter,
+  select
+}: {
+  limit: number
+  sort: string
+  page: number
+  filter: Record<string, any>
+  select: string[]
+}) => {
+  const skip = (page - 1) * limit
+  const sortBy: any = sort === 'ctime' ? { _id: -1 } : { _id: 1 }
+  const product = await database.product
+    .find(filter)
+    .sort(sortBy)
+    .skip(skip)
+    .limit(limit)
+    .select(getSelectData(select))
+    .lean()
+  return product
+}
+const findProduct = async ({ product_id, unSelect }: { product_id: string; unSelect: string[] }) => {
+  return await database.product.findById(product_id).select(getUnSelectData(unSelect))
+}
 //PUT//
 const publishProductByShop = async ({ product_shop, product_id }: { product_shop: string; product_id: string }) => {
   const foundShop = await database.product.findOne({
@@ -56,4 +84,12 @@ const UnPublishProductByShop = async ({ product_shop, product_id }: { product_sh
   const { modifiedCount } = await foundShop.updateOne(foundShop)
   return modifiedCount
 }
-export { findAllDraftForShop, findAllPublishForShop, publishProductByShop, UnPublishProductByShop, searchProductByUser }
+export {
+  findAllDraftForShop,
+  findAllPublishForShop,
+  publishProductByShop,
+  UnPublishProductByShop,
+  searchProductByUser,
+  findAllProducts,
+  findProduct
+}
