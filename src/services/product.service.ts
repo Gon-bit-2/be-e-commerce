@@ -3,6 +3,13 @@ import { Types } from 'mongoose'
 import database from '~/db/database'
 import { BadRequestError } from '~/middleware/error.middleware'
 import { IProduct, ProductType } from '~/model/products.model'
+import {
+  findAllDraftForShop,
+  findAllPublishForShop,
+  publishProductByShop,
+  searchProductByUser,
+  UnPublishProductByShop
+} from '~/model/repositories/product.repo'
 class ProductFactory {
   async createProduct(type: ProductType, payload: IProduct) {
     switch (type) {
@@ -16,6 +23,46 @@ class ProductFactory {
         throw new BadRequestError(`Invalid Product Type ${type}`)
     }
   }
+  //PUT//
+  async publishProductByShop({ product_shop, product_id }: { product_shop: string; product_id: string }) {
+    return await publishProductByShop({ product_shop, product_id })
+  }
+  async UnPublishProductByShop({ product_shop, product_id }: { product_shop: string; product_id: string }) {
+    return await UnPublishProductByShop({ product_shop, product_id })
+  }
+  ////
+
+  //Query//
+
+  async findAllDraftForShop({
+    product_shop,
+    limit = 50,
+    skip = 0
+  }: {
+    product_shop: Types.ObjectId
+    limit?: number
+    skip?: number
+  }) {
+    const query = { product_shop, isDraft: true }
+    return await findAllDraftForShop({ query, limit, skip })
+  }
+  async searchProducts(keySearch: string) {
+    return await searchProductByUser(keySearch)
+  }
+  //End QUERY//
+  async findAllPublishForShop({
+    product_shop,
+    limit = 50,
+    skip = 0
+  }: {
+    product_shop: Types.ObjectId
+    limit?: number
+    skip?: number
+  }) {
+    const query = { product_shop, isPublished: true }
+    return await findAllPublishForShop({ query, limit, skip })
+  }
+  ////
 }
 //define base product class
 class Product {

@@ -15,8 +15,8 @@ const apiKey = async (req: Request, res: Response, next: NextFunction) => {
         message: 'Forbidden Error'
       })
     }
-    const newApiKey = await apiKeyService.createApiKey()
-    console.log('API_KEY>>>', newApiKey)
+    // const newApiKey = await apiKeyService.createApiKey()
+    // console.log('API_KEY>>>', newApiKey)
 
     const objKey = await apiKeyService.findById(key as string)
     if (!objKey) {

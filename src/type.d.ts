@@ -13,7 +13,7 @@ declare module 'express-serve-static-core' {
 declare module 'jsonwebtoken' {
   export interface JwtPayload {
     //make optional so when you try to decode stuff other than user it will show it can be undefined
-    userId?: string
+    userId?: Types.ObjectId
     email?: string
   }
 }

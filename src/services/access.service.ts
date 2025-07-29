@@ -7,6 +7,7 @@ import { getInfoData } from '~/utils/info'
 import { AuthFailureError, BadRequestError, ForbiddenError } from '~/middleware/error.middleware'
 import { findByEmail } from '~/services/shop.service'
 import e from 'express'
+import { generateApiKey } from '~/utils/generateApikey'
 interface ISignUp {
   name: string
   email: string
@@ -32,6 +33,8 @@ class AccessService {
       roles: RoleShop.SHOP
     })
     if (newShop) {
+      //apikey
+
       //create private key and public key
       const privateKey = crypto.randomBytes(64).toString('hex')
       const publicKey = crypto.randomBytes(64).toString('hex')

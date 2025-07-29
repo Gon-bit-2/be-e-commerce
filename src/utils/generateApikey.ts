@@ -10,7 +10,7 @@ const generateApiKey = async () => {
   console.log('API Key đã được tạo thành công!')
   console.log('Key:', apiKey.key)
   console.log('=================================')
+  return apiKey
 }
 
 generateApiKey().catch(console.error)
-export { generateApiKey }
