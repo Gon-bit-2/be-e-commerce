@@ -1,8 +1,9 @@
 'use strict'
 import { Types } from 'mongoose'
 import database from '~/db/database'
-import { BadRequestError } from '~/middleware/error.middleware'
+import { BadRequestError, ConFlictRequestError } from '~/middleware/error.middleware'
 import { IProduct, ProductType } from '~/model/products.model'
+import { insertInventory } from '~/model/repositories/inventory.repo'
 import {
   findAllDraftForShop,
   findAllProducts,
@@ -116,6 +117,8 @@ class Product {
   product_type: ProductType
   product_shop: Types.ObjectId
   product_attributes: any
+  isDraft: boolean
+  isPublished: boolean
   constructor({
     product_name,
     product_thumb,
@@ -124,7 +127,9 @@ class Product {
     product_type,
     product_shop,
     product_attributes,
-    product_quantity
+    product_quantity,
+    isDraft,
+    isPublished
   }: IProduct) {
     this.product_name = product_name
     this.product_thumb = product_thumb
@@ -134,9 +139,20 @@ class Product {
     this.product_shop = product_shop
     this.product_attributes = product_attributes
     this.product_quantity = product_quantity
+    this.isDraft = isDraft
+    this.isPublished = isPublished
   }
   async createProduct(productId: Types.ObjectId) {
-    return await database.product.create({ ...this, _id: productId })
+    const newProduct = await database.product.create({ ...this, _id: productId })
+    if (newProduct) {
+      //add stock vào Inventory
+      await insertInventory({
+        productId: newProduct._id,
+        shopId: newProduct.product_shop,
+        productStock: newProduct.product_quantity
+      })
+    }
+    return newProduct
   }
   async updateProduct(productId: string, bodyUpdate: any) {
     return await updateProductById({ productId, bodyUpdate, model: database.product })
@@ -145,6 +161,16 @@ class Product {
 //define sub class for different products types clothing
 class Clothing extends Product {
   async createProduct(): Promise<any> {
+    const existingProduct = await database.product
+      .findOne({
+        product_name: this.product_name,
+        product_shop: this.product_shop
+      })
+      .lean()
+
+    if (existingProduct) {
+      throw new ConFlictRequestError('Error: Product already exists!')
+    }
     const newClothing = await database.clothing.create({ ...this.product_attributes, product_shop: this.product_shop })
     if (!newClothing) throw new BadRequestError('Create new Clothing Error')
     const newProduct = await super.createProduct(newClothing._id)
@@ -152,11 +178,11 @@ class Clothing extends Product {
     return newProduct
   }
   async updateProduct(productId: string) {
-    console.log('Check this::::', this)
+    // console.log('Check this::::', this)
 
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     const bodyUpdate = removeUndefinedObject(this)
-    console.log('sau khi check null or undefined::', bodyUpdate)
+    // console.log('sau khi check null or undefined::', bodyUpdate)
 
     if (bodyUpdate.product_attributes) {
       //update child
@@ -173,6 +199,16 @@ class Clothing extends Product {
 //define sub class for different products types Electronic
 class Electronic extends Product {
   async createProduct(): Promise<any> {
+    const existingProduct = await database.product
+      .findOne({
+        product_name: this.product_name,
+        product_shop: this.product_shop
+      })
+      .lean()
+
+    if (existingProduct) {
+      throw new ConFlictRequestError('Error: Product already exists!')
+    }
     const newElectronic = await database.electronic.create({
       ...this.product_attributes,
       product_shop: this.product_shop
@@ -196,6 +232,16 @@ class Electronic extends Product {
 
 class Furniture extends Product {
   async createProduct(): Promise<any> {
+    const existingProduct = await database.product
+      .findOne({
+        product_name: this.product_name,
+        product_shop: this.product_shop
+      })
+      .lean()
+
+    if (existingProduct) {
+      throw new ConFlictRequestError('Error: Product already exists!')
+    }
     const newFurniture = await database.furniture.create({
       ...this.product_attributes,
       product_shop: this.product_shop
