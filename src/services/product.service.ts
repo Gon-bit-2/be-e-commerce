@@ -13,6 +13,7 @@ import {
   UnPublishProductByShop,
   updateProductById
 } from '~/model/repositories/product.repo'
+import { removeUndefinedObject, updateNestedObjectParser } from '~/utils'
 class ProductFactory {
   async createProduct(type: ProductType, payload: IProduct) {
     switch (type) {
@@ -151,13 +152,21 @@ class Clothing extends Product {
     return newProduct
   }
   async updateProduct(productId: string) {
+    console.log('Check this::::', this)
+
     // eslint-disable-next-line @typescript-eslint/no-this-alias
-    const bodyUpdate = this
+    const bodyUpdate = removeUndefinedObject(this)
+    console.log('sau khi check null or undefined::', bodyUpdate)
+
     if (bodyUpdate.product_attributes) {
       //update child
-      await updateProductById({ productId, bodyUpdate: this.product_attributes, model: database.clothing })
+      await updateProductById({
+        productId,
+        bodyUpdate: updateNestedObjectParser(bodyUpdate.product_attributes),
+        model: database.clothing
+      })
     }
-    const updateProduct = await super.updateProduct(productId, bodyUpdate)
+    const updateProduct = await super.updateProduct(productId, updateNestedObjectParser(bodyUpdate))
     return updateProduct
   }
 }
