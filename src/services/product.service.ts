@@ -5,6 +5,7 @@ import { BadRequestError, ConFlictRequestError } from '~/middleware/error.middle
 import { IProduct, ProductType } from '~/model/products.model'
 import { insertInventory } from '~/model/repositories/inventory.repo'
 import {
+  existingProduct,
   findAllDraftForShop,
   findAllProducts,
   findAllPublishForShop,
@@ -161,14 +162,12 @@ class Product {
 //define sub class for different products types clothing
 class Clothing extends Product {
   async createProduct(): Promise<any> {
-    const existingProduct = await database.product
-      .findOne({
-        product_name: this.product_name,
-        product_shop: this.product_shop
-      })
-      .lean()
+    const checkExits = await existingProduct({
+      productName: this.product_name,
+      productShop: this.product_shop
+    })
 
-    if (existingProduct) {
+    if (checkExits) {
       throw new ConFlictRequestError('Error: Product already exists!')
     }
     const newClothing = await database.clothing.create({ ...this.product_attributes, product_shop: this.product_shop })
@@ -199,14 +198,12 @@ class Clothing extends Product {
 //define sub class for different products types Electronic
 class Electronic extends Product {
   async createProduct(): Promise<any> {
-    const existingProduct = await database.product
-      .findOne({
-        product_name: this.product_name,
-        product_shop: this.product_shop
-      })
-      .lean()
+    const checkExits = await existingProduct({
+      productName: this.product_name,
+      productShop: this.product_shop
+    })
 
-    if (existingProduct) {
+    if (checkExits) {
       throw new ConFlictRequestError('Error: Product already exists!')
     }
     const newElectronic = await database.electronic.create({
@@ -232,14 +229,12 @@ class Electronic extends Product {
 
 class Furniture extends Product {
   async createProduct(): Promise<any> {
-    const existingProduct = await database.product
-      .findOne({
-        product_name: this.product_name,
-        product_shop: this.product_shop
-      })
-      .lean()
+    const checkExits = await existingProduct({
+      productName: this.product_name,
+      productShop: this.product_shop
+    })
 
-    if (existingProduct) {
+    if (checkExits) {
       throw new ConFlictRequestError('Error: Product already exists!')
     }
     const newFurniture = await database.furniture.create({

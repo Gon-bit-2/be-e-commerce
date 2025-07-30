@@ -38,5 +38,5 @@ const inventorySchema = new Schema<IInventory>(
   }
 )
 
-const InventoryModel = model(DOCUMENT_NAME, inventorySchema)
-export default InventoryModel
+const inventoryModel = model(DOCUMENT_NAME, inventorySchema)
+export default inventoryModel

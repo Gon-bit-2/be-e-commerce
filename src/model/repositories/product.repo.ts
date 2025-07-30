@@ -1,6 +1,6 @@
 'use strict'
 
-import { Model } from 'mongoose'
+import { Model, Types } from 'mongoose'
 import { UpdateQuery } from 'mongoose'
 import database from '~/db/database'
 import { getSelectData, getUnSelectData } from '~/utils'
@@ -10,6 +10,15 @@ type TQuery = {
   skip?: number
 }
 ///QUERY///
+
+const existingProduct = async ({ productName, productShop }: { productName: string; productShop: Types.ObjectId }) => {
+  return await database.product
+    .findOne({
+      product_name: productName,
+      product_shop: productShop
+    })
+    .lean()
+}
 const queryProduct = async ({ query, limit, skip }: { query: Record<string, any>; limit?: number; skip?: number }) => {
   return await database.product
     .find(query)
@@ -102,6 +111,7 @@ const updateProductById = async <T>({
   })
 }
 export {
+  existingProduct,
   findAllDraftForShop,
   findAllPublishForShop,
   publishProductByShop,
