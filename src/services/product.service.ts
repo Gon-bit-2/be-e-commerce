@@ -10,7 +10,8 @@ import {
   findProduct,
   publishProductByShop,
   searchProductByUser,
-  UnPublishProductByShop
+  UnPublishProductByShop,
+  updateProductById
 } from '~/model/repositories/product.repo'
 class ProductFactory {
   async createProduct(type: ProductType, payload: IProduct) {
@@ -25,17 +26,30 @@ class ProductFactory {
         throw new BadRequestError(`Invalid Product Type ${type}`)
     }
   }
-  //PUT//
+  //PUT-POST//
   async publishProductByShop({ product_shop, product_id }: { product_shop: string; product_id: string }) {
     return await publishProductByShop({ product_shop, product_id })
   }
   async UnPublishProductByShop({ product_shop, product_id }: { product_shop: string; product_id: string }) {
     return await UnPublishProductByShop({ product_shop, product_id })
   }
-  async createUpdateProduct() {
-    return await database.product.find()
+
+  //END PUT//
+
+  //PATCH//
+  async updateProduct(type: ProductType, productId: string, payload: IProduct) {
+    switch (type) {
+      case 'Electronics':
+        return new Electronic(payload).updateProduct(productId)
+      case 'Clothing':
+        return new Clothing(payload).updateProduct(productId)
+      case 'Furniture':
+        return new Furniture(payload).updateProduct(productId)
+      default:
+        throw new BadRequestError(`Invalid Product Type ${type}`)
+    }
   }
-  ////
+  //END PATCH//
 
   //Query//
 
@@ -123,6 +137,9 @@ class Product {
   async createProduct(productId: Types.ObjectId) {
     return await database.product.create({ ...this, _id: productId })
   }
+  async updateProduct(productId: string, bodyUpdate: any) {
+    return await updateProductById({ productId, bodyUpdate, model: database.product })
+  }
 }
 //define sub class for different products types clothing
 class Clothing extends Product {
@@ -132,6 +149,16 @@ class Clothing extends Product {
     const newProduct = await super.createProduct(newClothing._id)
     if (!newProduct) throw new BadRequestError('Create new Product Error')
     return newProduct
+  }
+  async updateProduct(productId: string) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const bodyUpdate = this
+    if (bodyUpdate.product_attributes) {
+      //update child
+      await updateProductById({ productId, bodyUpdate: this.product_attributes, model: database.clothing })
+    }
+    const updateProduct = await super.updateProduct(productId, bodyUpdate)
+    return updateProduct
   }
 }
 //define sub class for different products types Electronic
@@ -146,6 +173,16 @@ class Electronic extends Product {
     if (!newProduct) throw new BadRequestError('Create new Product Error')
     return newProduct
   }
+  async updateProduct(productId: string) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const bodyUpdate = this
+    if (bodyUpdate.product_attributes) {
+      //update child
+      await updateProductById({ productId, bodyUpdate: this.product_attributes, model: database.electronic })
+    }
+    const updateProduct = await super.updateProduct(productId, bodyUpdate)
+    return updateProduct
+  }
 }
 
 class Furniture extends Product {
@@ -158,6 +195,16 @@ class Furniture extends Product {
     const newProduct = await super.createProduct(newFurniture._id)
     if (!newProduct) throw new BadRequestError('Create new Product Error')
     return newProduct
+  }
+  async updateProduct(productId: string) {
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
+    const bodyUpdate = this
+    if (bodyUpdate.product_attributes) {
+      //update child
+      await updateProductById({ productId, bodyUpdate: this.product_attributes, model: database.furniture })
+    }
+    const updateProduct = await super.updateProduct(productId, bodyUpdate)
+    return updateProduct
   }
 }
 const productFactory = new ProductFactory()

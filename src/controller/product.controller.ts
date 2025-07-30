@@ -37,6 +37,17 @@ class ProductController {
       metadata: unPublishProduct
     }).send(res)
   }
+  async updateProduct(req: Request, res: Response) {
+    const { id } = req.params
+    const updateProduct = await productFactory.updateProduct(req.body.product_type, id, {
+      ...req.body,
+      product_shop: req.user.userId
+    })
+    new SuccessResponse({
+      message: 'Un Published Product success',
+      metadata: updateProduct
+    }).send(res)
+  }
   /**
    *
    * @description Get All Draft For Shop

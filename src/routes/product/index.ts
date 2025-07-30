@@ -15,6 +15,7 @@ router.use(authenticationV2)
 router.post('', productController.createProduct)
 router.post('/publish/:id', productController.publishedProductByShop)
 router.post('/unpublish/:id', productController.unPublishedProductByShop)
+router.patch('/:id', productController.updateProduct)
 //Query
 router.get('/drafts/all', productController.getAllDraftForShop)
 router.get('/published/all', productController.getAllPublishForShop)

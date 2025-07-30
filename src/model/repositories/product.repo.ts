@@ -1,5 +1,7 @@
 'use strict'
 
+import { Model } from 'mongoose'
+import { UpdateQuery } from 'mongoose'
 import database from '~/db/database'
 import { getSelectData, getUnSelectData } from '~/utils'
 type TQuery = {
@@ -84,6 +86,21 @@ const UnPublishProductByShop = async ({ product_shop, product_id }: { product_sh
   const { modifiedCount } = await foundShop.updateOne(foundShop)
   return modifiedCount
 }
+const updateProductById = async <T>({
+  productId,
+  bodyUpdate,
+  model,
+  isNew = true
+}: {
+  productId: string
+  bodyUpdate: UpdateQuery<T>
+  model: Model<T>
+  isNew?: boolean
+}) => {
+  return await model.findByIdAndUpdate(productId, bodyUpdate, {
+    new: isNew
+  })
+}
 export {
   findAllDraftForShop,
   findAllPublishForShop,
@@ -91,5 +108,6 @@ export {
   UnPublishProductByShop,
   searchProductByUser,
   findAllProducts,
-  findProduct
+  findProduct,
+  updateProductById
 }
