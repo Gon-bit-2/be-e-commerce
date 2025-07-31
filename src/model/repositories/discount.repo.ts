@@ -1,7 +1,8 @@
+import { Model } from 'mongoose'
 import database from '~/db/database'
 import { getSelectData, getUnSelectData } from '~/utils'
 
-const finAllDiscountCodeSelect = async ({
+const finAllDiscountCodeSelect = async <T>({
   limit = 50,
   page = 1,
   sort = 'ctime',
@@ -14,7 +15,7 @@ const finAllDiscountCodeSelect = async ({
   page: number
   filter: Record<string, any>
   select: string[]
-  model?: any
+  model?: Model<T>
 }) => {
   const skip = (page - 1) * limit
   const sortBy: any = sort === 'ctime' ? { _id: -1 } : { _id: 1 }
@@ -28,7 +29,7 @@ const finAllDiscountCodeSelect = async ({
   return document
 }
 
-const finAllDiscountCodeUnselect = async ({
+const finAllDiscountCodeUnselect = async <T>({
   limit = 50,
   page = 1,
   sort = 'ctime',
@@ -41,7 +42,7 @@ const finAllDiscountCodeUnselect = async ({
   page: number
   filter: Record<string, any>
   unSelect: string[]
-  model: any
+  model: Model<T>
 }) => {
   const skip = (page - 1) * limit
   const sortBy: any = sort === 'ctime' ? { _id: -1 } : { _id: 1 }
@@ -54,5 +55,7 @@ const finAllDiscountCodeUnselect = async ({
     .lean()
   return document
 }
-
-export { finAllDiscountCodeUnselect, finAllDiscountCodeSelect }
+const checkDiscountExists = async <T>({ model, filter }: { filter: Record<string, any>; model: Model<T> }) => {
+  return await model.findOne(filter).lean()
+}
+export { finAllDiscountCodeUnselect, finAllDiscountCodeSelect, checkDiscountExists }
