@@ -1,6 +1,6 @@
 'use strict'
 
-import { Date, model, Schema, Types } from 'mongoose'
+import { model, Schema, Types } from 'mongoose'
 const DOCUMENT_NAME = 'Discount'
 const COLLECTION_NAME = 'Discounts'
 export interface IDiscount extends Document {
@@ -12,7 +12,7 @@ export interface IDiscount extends Document {
   discount_start_date: Date
   discount_end_date: Date
   discount_max_uses: number
-  discount_user_count: number
+  discount_uses_count: number
   discount_users_used: string[]
   discount_max_uses_per_user: number
   discount_min_order_value: number
@@ -38,7 +38,7 @@ const discountSchema = new Schema<IDiscount>(
     discount_start_date: { type: Date, required: true },
     discount_end_date: { type: Date, required: true },
     discount_max_uses: { type: Number, required: true }, //luot dung toi da ,
-    discount_user_count: { type: Number, required: true }, //so luong discount da su dung ,
+    discount_uses_count: { type: Number, required: true }, //so luong discount da su dung ,
     discount_users_used: { type: [String], default: [] }, //ai la nguoi su dung
     discount_max_uses_per_user: { type: Number, required: true }, //so luong discount cho phep moi user su dung
     discount_min_order_value: { type: Number, required: true },

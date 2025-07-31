@@ -1,9 +1,12 @@
+import { Types } from 'mongoose'
+
 const getSelectData = (select: string[] = []) => {
   return Object.fromEntries(select.map((el) => [el, 1]))
 }
 const getUnSelectData = (select: string[] = []) => {
   return Object.fromEntries(select.map((el) => [el, 0]))
 }
+const convertToObjectIdMongo = (id: string) => new Types.ObjectId(id)
 /**
  * @description Loại bỏ các thuộc tính có giá trị null hoặc undefined khỏi một object.
  * @param obj - Object đầu vào.
@@ -40,4 +43,4 @@ const updateNestedObjectParser = (obj: any) => {
   })
   return final
 }
-export { getSelectData, getUnSelectData, removeUndefinedObject, updateNestedObjectParser }
+export { getSelectData, getUnSelectData, removeUndefinedObject, updateNestedObjectParser, convertToObjectIdMongo }

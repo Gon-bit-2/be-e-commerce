@@ -6,6 +6,7 @@ import keyTokenModel from '~/model/keytoken.model'
 import apiKeyModel from '~/model/apikey.model'
 import { productModel, clothingModel, electronicModel, furnitureModel } from '~/model/products.model'
 import inventoryModel from '~/model/inventories.model'
+import discountModel from '~/model/discount.model'
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@shopdev.iphmauu.mongodb.net/shopDEV` //
 class Database {
   constructor() {
@@ -43,6 +44,9 @@ class Database {
   }
   get inventories() {
     return inventoryModel
+  }
+  get discount() {
+    return discountModel
   }
 }
 const database = new Database()
