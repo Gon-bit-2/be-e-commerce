@@ -47,6 +47,7 @@ class DiscountService {
     if (new Date(discount_start_date) >= new Date(discount_end_date)) {
       throw new BadRequestError('Start Date Must Be Before End Date')
     }
+    //check xem có tồn tại discount đó chưa
     const foundDiscount = await database.discount
       .findOne({
         discount_code: discount_code,
@@ -57,6 +58,7 @@ class DiscountService {
     if (foundDiscount && foundDiscount.discount_is_active) {
       throw new BadRequestError('Discount exists!')
     }
+    //create
     const newDiscount = await database.discount.create({
       discount_name,
       discount_description,
@@ -84,13 +86,11 @@ class DiscountService {
   async getAllDiscountCodeWithProduct({
     discount_code,
     discount_shopId,
-    userId,
     limit,
     page
   }: {
     discount_code: string
     discount_shopId: Types.ObjectId
-    userId: Types.ObjectId
     limit: number
     page: number
   }) {
@@ -172,13 +172,11 @@ class DiscountService {
   }
   */
   async getDiscountAmount({
-    codeId,
     userId,
     shopId,
     discount_code,
     products
   }: {
-    codeId: string
     userId: string
     shopId: string
     discount_code: string
@@ -197,8 +195,6 @@ class DiscountService {
     const {
       discount_is_active,
       discount_max_uses,
-      discount_start_date,
-      discount_end_date,
       discount_min_order_value,
       discount_max_uses_per_user,
       discount_users_used,
@@ -207,8 +203,7 @@ class DiscountService {
     } = foundDiscount
     if (!discount_is_active) throw new NotFoundError('Discount Expired')
     if (!discount_max_uses) throw new NotFoundError('Discount are out')
-    // if (new Date() < new Date(discount_start_date) || new Date() > new Date(discount_end_date))
-    //   throw new NotFoundError('Discount are out')
+
     // check min value
     // 1. Tính tổng đơn hàng trước
     const totalOrder = products.reduce((acc: number, product: Record<string, any>) => {

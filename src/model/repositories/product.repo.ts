@@ -3,7 +3,7 @@
 import { Model, Types } from 'mongoose'
 import { UpdateQuery } from 'mongoose'
 import database from '~/db/database'
-import { getSelectData, getUnSelectData } from '~/utils'
+import { convertToObjectIdMongo, getSelectData, getUnSelectData } from '~/utils'
 type TQuery = {
   query: Record<string, any>
   limit?: number
@@ -110,6 +110,9 @@ const updateProductById = async <T>({
     new: isNew
   })
 }
+const getProductById = async (productId: string) => {
+  return await database.product.findOne({ _id: convertToObjectIdMongo(productId) }).lean()
+}
 export {
   existingProduct,
   findAllDraftForShop,
@@ -119,5 +122,6 @@ export {
   searchProductByUser,
   findAllProducts,
   findProduct,
-  updateProductById
+  updateProductById,
+  getProductById
 }
