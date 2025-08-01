@@ -180,7 +180,7 @@ class DiscountService {
     userId: string
     shopId: string
     discount_code: string
-    products: Record<string, any>[]
+    products: any[]
   }) {
     const foundDiscount = await checkDiscountExists({
       model: database.discount,
@@ -189,6 +189,8 @@ class DiscountService {
         discount_shopId: convertToObjectIdMongo(shopId)
       }
     })
+    console.log('Check found discount>>>', foundDiscount)
+
     if (!foundDiscount || !foundDiscount.discount_is_active) {
       throw new NotFoundError('Discount not Exists')
     }
