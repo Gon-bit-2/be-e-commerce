@@ -4,6 +4,7 @@ import database from '~/db/database'
 import { BadRequestError } from '~/middleware/error.middleware'
 import { checkProductByServer, findCartId } from '~/model/repositories/cart.repo'
 import discountService from '~/services/discount.service'
+import redisService from '~/services/redis.service'
 export interface ProductItem {
   price: number
   quantity: number
@@ -24,6 +25,10 @@ interface CheckoutPayload {
   cartId: string
   userId: string
   shop_order_ids: ShopOrder[]
+}
+interface OrderPayload extends CheckoutPayload {
+  user_address: any
+  user_payment: any
 }
 class CheckoutService {
   /*
@@ -128,6 +133,52 @@ class CheckoutService {
       checkout_order
     }
   }
+  //order
+  async orderByUser({ shop_order_ids, cartId, userId, user_address = {}, user_payment = {} }: OrderPayload) {
+    const { shop_order_ids_new, checkout_order } = await checkoutService.checkoutPreview({
+      cartId,
+      userId,
+      shop_order_ids
+    })
+
+    //check co vuot ton kho khong
+    //get new array product
+    const products = shop_order_ids_new.flatMap((order) => order.item_products)
+    console.log('[1]', products)
+    const acquireProduct = []
+    for (let i = 0; i < products.length; i++) {
+      const { productId, quantity } = products[i]
+      const keyLock = await redisService.acquireLock(productId, quantity, cartId)
+      acquireProduct.push(keyLock ? true : false)
+      if (keyLock) {
+        await redisService.releaseLock(keyLock, cartId)
+      }
+    }
+    //check neu co 1 san pham het hang trong kho
+    if (acquireProduct.includes(false)) {
+      throw new BadRequestError('Sản phẩm được cập nhập, vui lòng quay lại giỏ hàng')
+    }
+    const newOrder = await database.order.create({
+      order_userId: userId,
+      order_checkout: checkout_order,
+      order_shipping: user_address,
+      order_payment: user_payment,
+      order_products: shop_order_ids_new
+    })
+    //nếu insert success thi xóa product in cart
+    if (newOrder) {
+      //
+    }
+    return newOrder
+  }
+  /* Query Order [User] */
+  async getOrderByUser() {}
+  /* Query Order usesing ID [User] */
+  async getOneOrderByUser() {}
+  /* cancel Order [User] */
+  async cancelOrderByUser() {}
+  /* update Order [User|Admin] */
+  async updateOrderByStatusByShop() {}
 }
 const checkoutService = new CheckoutService()
 export default checkoutService

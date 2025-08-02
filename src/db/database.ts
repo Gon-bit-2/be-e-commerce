@@ -8,6 +8,7 @@ import { productModel, clothingModel, electronicModel, furnitureModel } from '~/
 import inventoryModel from '~/model/inventories.model'
 import discountModel from '~/model/discount.model'
 import cartModel from '~/model/cart.model'
+import orderModel from '~/model/order.model'
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@shopdev.iphmauu.mongodb.net/shopDEV` //
 class Database {
   constructor() {
@@ -51,6 +52,9 @@ class Database {
   }
   get cart() {
     return cartModel
+  }
+  get order() {
+    return orderModel
   }
 }
 const database = new Database()

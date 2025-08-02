@@ -36,4 +36,9 @@ class ForbiddenError extends ErrorResponse {
     super(message, statusCode)
   }
 }
-export { BadRequestError, ConFlictRequestError, AuthFailureError, NotFoundError, ForbiddenError }
+class RedisErrorResponse extends ErrorResponse {
+  constructor(message = reasonPhrases.INTERNAL_SERVER_ERROR, statusCode = statusCodes.INTERNAL_SERVER_ERROR) {
+    super(message, statusCode)
+  }
+}
+export { BadRequestError, ConFlictRequestError, AuthFailureError, NotFoundError, ForbiddenError, RedisErrorResponse }

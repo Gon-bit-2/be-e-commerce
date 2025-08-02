@@ -6,6 +6,7 @@ import compression from 'compression'
 import 'dotenv/config'
 import database from '~/db/database'
 import router from '~/routes'
+import redisService from '~/services/redis.service'
 const app = express()
 const PORT = process.env.PORT_SERVER || 3000
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -18,6 +19,8 @@ app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
 //init db
 database.connect()
+//init redis
+redisService.initRedis()
 //init routes
 app.use('/', router)
 //handle error
@@ -40,6 +43,11 @@ app.use((error: any, req: Request, res: Response, next: NextFunction) => {
 //
 const server = app.listen(PORT, () => {
   console.log(`BE E-Commerce Server is running with port ${PORT} `)
+})
+
+process.on('SIGINT', () => {
+  server.close(() => console.log('Exits Server Express'))
+  redisService.closeRedis() // <-- Thêm dòng này
 })
 
 process.on('SIGINT', () => {

@@ -2,7 +2,14 @@
 import { Types } from 'mongoose'
 import database from '~/db/database'
 import { BadRequestError, ConFlictRequestError } from '~/middleware/error.middleware'
-import { IProduct, ProductType } from '~/model/products.model'
+import {
+  IClothingAttributes,
+  IElectronicAttributes,
+  IFurnitureAttributes,
+  IProduct,
+  ProductType,
+  TProductAttributes
+} from '~/model/products.model'
 import { insertInventory } from '~/model/repositories/inventory.repo'
 import {
   existingProduct,
@@ -117,7 +124,7 @@ class Product {
   product_quantity: number
   product_type: ProductType
   product_shop: Types.ObjectId
-  product_attributes: any
+  product_attributes: TProductAttributes
   isDraft: boolean
   isPublished: boolean
   constructor({
@@ -155,13 +162,13 @@ class Product {
     }
     return newProduct
   }
-  async updateProduct(productId: string, bodyUpdate: any) {
+  async updateProduct(productId: string, bodyUpdate: Partial<IProduct>) {
     return await updateProductById({ productId, bodyUpdate, model: database.product })
   }
 }
 //define sub class for different products types clothing
 class Clothing extends Product {
-  async createProduct(): Promise<any> {
+  async createProduct() {
     const checkExits = await existingProduct({
       productName: this.product_name,
       productShop: this.product_shop
@@ -197,7 +204,7 @@ class Clothing extends Product {
 }
 //define sub class for different products types Electronic
 class Electronic extends Product {
-  async createProduct(): Promise<any> {
+  async createProduct() {
     const checkExits = await existingProduct({
       productName: this.product_name,
       productShop: this.product_shop
@@ -228,7 +235,7 @@ class Electronic extends Product {
 }
 
 class Furniture extends Product {
-  async createProduct(): Promise<any> {
+  async createProduct() {
     const checkExits = await existingProduct({
       productName: this.product_name,
       productShop: this.product_shop

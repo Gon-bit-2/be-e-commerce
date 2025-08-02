@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express'
 import jwt from 'jsonwebtoken'
+import { Types } from 'mongoose'
 import { asyncHandle } from '~/helpers/asyncHandle'
 import { AuthFailureError, NotFoundError } from '~/middleware/error.middleware'
 import keyTokenService from '~/services/keyToken.service'
@@ -9,7 +10,11 @@ const HEADER = {
   AUTHORIZATION: 'authorization',
   REFRESHTOKEN: 'refreshtoken'
 }
-const createTokenPair = async (payload: any, publicKey: string, privateKey: string) => {
+interface IPayLoad {
+  userId: Types.ObjectId
+  email: string
+}
+const createTokenPair = async (payload: IPayLoad, publicKey: string, privateKey: string) => {
   const accessToken = await jwt.sign(payload, publicKey, {
     expiresIn: '2d'
   })
@@ -40,6 +45,7 @@ const authenticationV2 = asyncHandle(async (req: Request, res: Response, next: N
 
   if (req.headers[HEADER.REFRESHTOKEN]) {
     try {
+      //xử phần lấy lại cặp key
       const refreshToken = req.headers[HEADER.REFRESHTOKEN]
       if (!refreshToken || Array.isArray(refreshToken)) throw new AuthFailureError('REFRESHTOKEN IN VALID')
       const decodeUser = jwt.verify(refreshToken, keyStore.privateKey)

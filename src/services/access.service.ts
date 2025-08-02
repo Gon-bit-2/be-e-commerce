@@ -2,24 +2,14 @@ import database from '~/db/database'
 import { comparePassword, hashPassword } from '~/utils/hashPassword'
 import crypto from 'crypto'
 import keyTokenService from '~/services/keyToken.service'
-import { createTokenPair, verifyJWT } from '~/utils/auth'
+import { createTokenPair } from '~/utils/auth'
 import { getInfoData } from '~/utils/info'
 import { AuthFailureError, BadRequestError, ForbiddenError } from '~/middleware/error.middleware'
 import { findByEmail } from '~/services/shop.service'
 import e from 'express'
-import { generateApiKey } from '~/utils/generateApikey'
-interface ISignUp {
-  name: string
-  email: string
-  password: string
-  roles: string
-}
-enum RoleShop {
-  SHOP,
-  WRITER,
-  EDITOR,
-  ADMIN
-}
+// import { generateApiKey } from '~/utils/generateApikey'
+import { IKeyStore, ISignUp, RoleShop } from '~/types/access.type'
+
 class AccessService {
   sigUp = async ({ name, email, password }: ISignUp) => {
     const holderShop = await database.shop.findOne({ email }).lean()
@@ -100,7 +90,9 @@ class AccessService {
       tokens
     }
   }
-  logout = async (keyStore: any) => {
+  logout = async (keyStore: IKeyStore) => {
+    // console.log('check keystore', keyStore._id)
+
     const delKey = await keyTokenService.removeKeyById(keyStore._id)
     console.log('delete key >>>', delKey)
 

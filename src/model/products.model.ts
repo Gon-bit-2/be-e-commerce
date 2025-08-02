@@ -5,8 +5,27 @@ import slugify from 'slugify'
 const DOCUMENT_NAME = 'Product'
 const COLLECTION_NAME = 'Products'
 export type ProductType = 'Electronics' | 'Clothing' | 'Furniture'
+export interface IClothingAttributes {
+  brand: string
+  size: string
+  material: string
+}
 
-export interface IProduct {
+export interface IElectronicAttributes {
+  manufacturer: string
+  model: string
+  color: string
+}
+
+export interface IFurnitureAttributes {
+  brand: string
+  size: string
+  material: string
+}
+
+// 2. Tạo một kiểu Union cho tất cả các loại attributes
+export type TProductAttributes = IClothingAttributes | IElectronicAttributes | IFurnitureAttributes
+export interface IProduct<T = TProductAttributes> {
   product_name: string
   product_thumb: string
   product_description?: string // Thuộc tính này là tùy chọn (không có "required: true")
@@ -15,7 +34,7 @@ export interface IProduct {
   product_quantity: number
   product_type: ProductType // Sử dụng kiểu đã định nghĩa ở trên
   product_shop: Types.ObjectId
-  product_attributes: any // Schema.Types.Mixed có thể được biểu diễn bằng "any"
+  product_attributes: T // Schema.Types.Mixed có thể được biểu diễn bằng "any"
   product_ratingAverage: number
   product_variation: any[]
   isDraft: boolean

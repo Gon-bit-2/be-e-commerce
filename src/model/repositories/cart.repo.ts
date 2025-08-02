@@ -2,7 +2,7 @@
 
 import database from '~/db/database'
 import { getProductById } from '~/model/repositories/product.repo'
-import { ProductItem } from '~/services/checkout.service'
+import checkoutService, { ProductItem } from '~/services/checkout.service'
 import { convertToObjectIdMongo } from '~/utils'
 
 const findCartId = async (cartId: string) => {
@@ -22,4 +22,5 @@ const checkProductByServer = async (products: ProductItem[]) => {
     })
   )
 }
+
 export { findCartId, checkProductByServer }

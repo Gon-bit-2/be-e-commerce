@@ -10,9 +10,15 @@
 import database from '~/db/database'
 import { NotFoundError } from '~/middleware/error.middleware'
 import { getProductById } from '~/model/repositories/product.repo'
-
+interface ICartProduct {
+  productId: string
+  shopId?: string
+  quantity: number
+  name?: string // Thêm các thuộc tính cần thiết khác
+  price?: number
+}
 class CartService {
-  async createUserCart({ userId, product }: { userId: string; product: any }) {
+  async createUserCart({ userId, product }: { userId: string; product: ICartProduct }) {
     const query = { cart_userId: userId, cart_state: 'active' },
       updateOrInsert = {
         $addToSet: {
@@ -23,7 +29,7 @@ class CartService {
 
     return await database.cart.findOneAndUpdate(query, updateOrInsert, options)
   }
-  async updateUserCartQuantity({ userId, product }: { userId: string; product: any }) {
+  async updateUserCartQuantity({ userId, product }: { userId: string; product: ICartProduct }) {
     const { productId, quantity } = product
     const query = { cart_userId: userId, 'cart_product.productId': productId, cart_state: 'active' },
       updateSet = {
@@ -35,7 +41,7 @@ class CartService {
 
     return await database.cart.findOneAndUpdate(query, updateSet, options)
   }
-  async addToCart({ userId, product }: { userId: string; product: any }) {
+  async addToCart({ userId, product }: { userId: string; product: ICartProduct }) {
     const userCart = await database.cart.findOne({ cart_userId: userId })
     if (!userCart) {
       //create
@@ -68,6 +74,7 @@ class CartService {
   ]
   */
   async updateToCart({ userId, shop_order_ids }: any) {
+    // eslint-disable-next-line no-unsafe-optional-chaining
     const { productId, quantity, old_quantity } = shop_order_ids[0]?.item_products[0]
     //
     const foundProduct = await getProductById(productId)

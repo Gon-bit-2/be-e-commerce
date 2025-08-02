@@ -41,10 +41,10 @@ class ProductController {
     const { id } = req.params
     const updateProduct = await productFactory.updateProduct(req.body.product_type, id, {
       ...req.body,
-      product_shop: req.user.userId
+      product_shop: req.user.userId //đồng bộ Id
     })
     new SuccessResponse({
-      message: 'Un Published Product success',
+      message: 'update Product success',
       metadata: updateProduct
     }).send(res)
   }
