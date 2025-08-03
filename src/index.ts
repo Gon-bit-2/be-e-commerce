@@ -7,6 +7,7 @@ import 'dotenv/config'
 import database from '~/db/database'
 import router from '~/routes'
 import redisService from '~/services/redis.service'
+
 const app = express()
 const PORT = process.env.PORT_SERVER || 3000
 // eslint-disable-next-line @typescript-eslint/no-require-imports
@@ -23,22 +24,23 @@ database.connect()
 redisService.initRedis()
 //init routes
 app.use('/', router)
+
 //handle error
 app.use((req: Request, res: Response, next: NextFunction) => {
   const error = new Error('Not Found')
   res.status(404).json({
     error
   })
-  next(error)
 })
 app.use((error: any, req: Request, res: Response, next: NextFunction) => {
   const statusCode = error.status || 500
+  console.error(error.stack || error)
+  // loggerService.sendToMessage(`Error: ${error.message}, Status: ${statusCode}, URL: ${req.originalUrl}`)
   res.status(statusCode).json({
     status: 'error',
     code: statusCode,
     message: error.message || 'Internal Server Error'
   })
-  next(error)
 })
 //
 const server = app.listen(PORT, () => {

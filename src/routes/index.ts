@@ -8,9 +8,11 @@ import checkoutRouter from './checkout'
 import inventoryRouter from './inventory'
 
 import { apiKey, permission } from '~/utils/checkAuth'
-import cartService from '~/services/cart.service'
+import { pushToLogDiscord } from '~/middleware/discord.middleware'
 
 const router = express.Router()
+//push log to discord
+router.use(pushToLogDiscord)
 //check apikey
 router.use(apiKey)
 //check permission
