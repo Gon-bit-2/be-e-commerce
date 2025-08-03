@@ -5,6 +5,8 @@ import { createClient, type RedisClientType } from 'redis'
 import { reservationInventory } from '~/model/repositories/inventory.repo'
 import 'dotenv/config'
 import { RedisErrorResponse } from '~/middleware/error.middleware'
+const uri = `redis://${process.env.REDIS_USER}:${process.env.REDIS_PASSWORD}@redis-12986.c8.us-east-1-2.ec2.redns.redis-cloud.com:12986`
+const URI_DOCKER = `redis://host.docker.internal:6379`
 // ✅ Dùng ReturnType để tự động lấy đúng kiểu dữ liệu của client
 // Dòng này có nghĩa là: "Kiểu RedisClient là bất cứ kiểu gì mà hàm createClient trả về"
 type RedisClient = ReturnType<typeof createClient>
@@ -52,7 +54,7 @@ class RedisService {
 
   initRedis = async () => {
     const instanceRedis = createClient({
-      url: `redis://${process.env.REDIS_USER}:${process.env.REDIS_PASSWORD}@redis-12986.c8.us-east-1-2.ec2.redns.redis-cloud.com:12986`
+      url: URI_DOCKER
     })
     this.client.instanceConnect = instanceRedis
     this.handleEventConnect({

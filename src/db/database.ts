@@ -10,13 +10,14 @@ import discountModel from '~/model/discount.model'
 import cartModel from '~/model/cart.model'
 import orderModel from '~/model/order.model'
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@shopdev.iphmauu.mongodb.net/shopDEV` //
+const uriDocker = `mongodb://localhost:27017/shopDEV`
 class Database {
   constructor() {
     this.connect()
   }
   async connect() {
     try {
-      await mongoose.connect(uri)
+      await mongoose.connect(uriDocker)
       countConnection()
       console.log(`Connected MongoDB successfully`)
     } catch (error) {
