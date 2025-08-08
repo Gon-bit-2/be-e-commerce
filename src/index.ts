@@ -7,6 +7,7 @@ import 'dotenv/config'
 import database from '~/db/database'
 import router from '~/routes'
 import redisService from '~/services/redis.service'
+import { generateApiKey } from '~/utils/generateApikey'
 
 const app = express()
 const PORT = process.env.PORT_SERVER || 3000
@@ -18,6 +19,9 @@ app.use(helmet())
 app.use(compression()) //giảm khối lượng phải vận chuyển đến client
 app.use(express.json())
 app.use(express.urlencoded({ extended: true }))
+//
+// generateApiKey()
+
 //init db
 database.connect()
 //init redis

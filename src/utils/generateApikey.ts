@@ -14,3 +14,4 @@ const generateApiKey = async () => {
 }
 
 generateApiKey().catch(console.error)
+export { generateApiKey }
