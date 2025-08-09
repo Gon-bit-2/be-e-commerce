@@ -67,7 +67,7 @@ const findAllProducts = async ({
     .lean()
   return product
 }
-const findProduct = async ({ product_id, unSelect }: { product_id: string; unSelect: string[] }) => {
+const findProduct = async ({ product_id, unSelect }: { product_id: string; unSelect?: string[] }) => {
   return await database.product.findById(product_id).select(getUnSelectData(unSelect))
 }
 //PUT//

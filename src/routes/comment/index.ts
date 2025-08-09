@@ -7,5 +7,7 @@ const router = express.Router()
 //authentication
 router.use(authenticationV2)
 router.post('/', commentController.createComment)
+router.get('/', commentController.getComment)
+router.delete('/', commentController.deleteComment)
 
 export default router

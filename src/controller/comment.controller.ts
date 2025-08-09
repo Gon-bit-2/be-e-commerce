@@ -14,6 +14,25 @@ class CommentController {
       metadata: newComment
     }).send(res)
   }
+  getComment = async (req: Request, res: Response) => {
+    const Comment = await commentService.getCommentsByParentId({
+      productId: req.query.productId as string,
+      parentCommentId: req.query.parentCommentId as string
+    })
+
+    new SuccessResponse({
+      message: 'get Comment  Success',
+      metadata: Comment
+    }).send(res)
+  }
+  deleteComment = async (req: Request, res: Response) => {
+    const Comment = await commentService.deleteComment(req.body)
+
+    new SuccessResponse({
+      message: 'get Comment  Success',
+      metadata: Comment
+    }).send(res)
+  }
 }
 
 const commentController = new CommentController()
