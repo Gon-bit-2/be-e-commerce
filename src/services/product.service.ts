@@ -22,6 +22,7 @@ import {
   UnPublishProductByShop,
   updateProductById
 } from '~/model/repositories/product.repo'
+import notificationService from '~/services/notification.service'
 import { removeUndefinedObject, updateNestedObjectParser } from '~/utils'
 class ProductFactory {
   async createProduct(type: ProductType, payload: IProduct) {
@@ -158,6 +159,16 @@ class Product {
         productId: newProduct._id,
         shopId: newProduct.product_shop,
         productStock: newProduct.product_quantity
+      })
+      //push noti system collection
+      await notificationService.pushNotiToSystem({
+        type: 'SHOP-001',
+        receivedId: 1,
+        senderId: this.product_shop as unknown as string,
+        options: {
+          product_name: this.product_name,
+          shope_name: this.product_shop
+        }
       })
     }
     return newProduct

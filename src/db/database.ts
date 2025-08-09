@@ -10,6 +10,7 @@ import discountModel from '~/model/discount.model'
 import cartModel from '~/model/cart.model'
 import orderModel from '~/model/order.model'
 import commentModel from '~/model/comment.model'
+import notificationModel from '~/model/notification.model'
 const uri = `mongodb+srv://${process.env.DB_USERNAME}:${process.env.DB_PASSWORD}@shopdev.iphmauu.mongodb.net/shopDEV` //
 const uriDocker = `mongodb://localhost:27017/shopDEV`
 class Database {
@@ -60,6 +61,9 @@ class Database {
   }
   get comment() {
     return commentModel
+  }
+  get notification() {
+    return notificationModel
   }
 }
 const database = new Database()
