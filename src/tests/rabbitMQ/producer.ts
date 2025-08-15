@@ -5,7 +5,7 @@ const runProducer = async () => {
     const connection = await amqplib.connect('amqp://guest:12345@localhost')
     const channel = await connection.createChannel()
     const queueName = 'test-topic'
-    await channel.assertExchange(queueName, 'topic', { durable: true })
+    await channel.assertQueue(queueName, { durable: true })
 
     //send message
     channel.sendToQueue(queueName, Buffer.from(message))
