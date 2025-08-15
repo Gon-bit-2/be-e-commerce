@@ -7,7 +7,7 @@ console.log = function () {
   log.apply(console, [new Date()].concat(Array.from(arguments)))
 }
 
-const runProducer = async () => {
+const runProducerDLX = async () => {
   try {
     const connection = await amqplib.connect('amqp://guest:12345@localhost')
     const channel = await connection.createChannel()
@@ -44,4 +44,4 @@ const runProducer = async () => {
     console.error(`Error occurred while sending message`, error)
   }
 }
-runProducer().catch(console.error)
+runProducerDLX().catch(console.error)
