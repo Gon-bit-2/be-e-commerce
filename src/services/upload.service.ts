@@ -19,6 +19,27 @@ class UploadService {
       }
     }
   }
+  async uploadImageFromLocal({ path, folderName = 'product/0710' }: { path: string; folderName?: string }) {
+    try {
+      const result = await cloudinary.uploader.upload(path, {
+        public_id: 'thumb',
+        folder: folderName
+      })
+      return {
+        image_url: result.secure_url,
+        shopId: '0710',
+        thumb_url: await cloudinary.url(result.public_id, {
+          height: 100,
+          width: 100,
+          format: 'jpg'
+        })
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new ServerErrorResponse()
+      }
+    }
+  }
 }
 const uploadService = new UploadService()
 export default uploadService
