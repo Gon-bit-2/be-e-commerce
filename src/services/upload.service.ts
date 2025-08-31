@@ -1,7 +1,8 @@
 'use strict'
 
 import cloudinary from '~/config/cloudinary.config'
-import { s3, PutObjectCommand } from '~/config/s3.config'
+import { s3, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '~/config/s3.config'
+import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
 import { ServerErrorResponse } from '~/middleware/error.middleware'
 import crypto from 'crypto'
 class UploadService {
@@ -68,7 +69,7 @@ class UploadService {
     }
   }
   /////////start upload aws///////
-  async uploadImageFromLocalS3AWS({ file }) {
+  async uploadImageFromLocalS3AWS({ file }: { file: any }) {
     try {
       if (!file) {
         throw new Error('No file provided')
@@ -79,16 +80,21 @@ class UploadService {
         throw new Error('AWS_BUCKET_NAME environment variable is not set')
       }
       const randomImageName = () => crypto.randomBytes(16).toString('hex')
+      const imageName = randomImageName()
       const command = new PutObjectCommand({
         Bucket: process.env.AWS_BUCKET_NAME,
-        Key: randomImageName(), // Fix property name
+        Key: imageName,
         Body: file.buffer,
         ContentType: file.mimetype || 'image/jpeg'
       })
       const result = await s3.send(command)
-      return {
-        data: result.$metadata
-      }
+
+      const singedUrl = new GetObjectCommand({
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: imageName
+      })
+      const url = await getSignedUrl(s3, singedUrl, { expiresIn: 3600 }) // url image upload
+      return url
     } catch (error) {
       if (error instanceof Error) {
         throw new ServerErrorResponse()
