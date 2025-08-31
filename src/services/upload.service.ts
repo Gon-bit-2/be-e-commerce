@@ -1,8 +1,9 @@
 'use strict'
 
 import cloudinary from '~/config/cloudinary.config'
+import { s3, PutObjectCommand } from '~/config/s3.config'
 import { ServerErrorResponse } from '~/middleware/error.middleware'
-
+import crypto from 'crypto'
 class UploadService {
   async uploadImageFromUrl() {
     try {
@@ -33,6 +34,60 @@ class UploadService {
           width: 100,
           format: 'jpg'
         })
+      }
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new ServerErrorResponse()
+      }
+    }
+  }
+  async uploadImageFromLocalFiles({ files, folderName = 'product/0710' }: { files: any; folderName?: string }) {
+    try {
+      if (files.length) return
+      const uploadUrls: any[] = []
+      for (const file of files) {
+        const result = await cloudinary.uploader.upload(file.path, {
+          folder: folderName
+        })
+        uploadUrls.push({
+          image_url: result.secure_url,
+          shopId: '0710',
+          thumb_url: await cloudinary.url(result.public_id, {
+            height: 100,
+            width: 100,
+            format: 'jpg'
+          })
+        })
+      }
+
+      return uploadUrls
+    } catch (error) {
+      if (error instanceof Error) {
+        throw new ServerErrorResponse()
+      }
+    }
+  }
+  /////////start upload aws///////
+  async uploadImageFromLocalS3AWS({ file }) {
+    try {
+      if (!file) {
+        throw new Error('No file provided')
+      }
+
+      // Validate required environment variables
+      if (!process.env.AWS_BUCKET_NAME) {
+        throw new Error('AWS_BUCKET_NAME environment variable is not set')
+      }
+      const randomImageName = () => crypto.randomBytes(16).toString('hex')
+      const command = new PutObjectCommand({
+        Bucket: process.env.AWS_BUCKET_NAME,
+        Key: randomImageName(), // Fix property name
+        Body: file.buffer,
+        ContentType: file.mimetype || 'image/jpeg'
+      })
+      const result = await s3.send(command)
+      return {
+        data: result.$metadata
       }
     } catch (error) {
       if (error instanceof Error) {

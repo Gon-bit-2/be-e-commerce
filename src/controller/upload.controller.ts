@@ -24,6 +24,28 @@ class UploadController {
       metadata: upload
     }).send(res)
   }
+  async uploadLocalFiles(req: Request, res: Response) {
+    const { files } = req
+    if (!files) {
+      throw new BadRequestError()
+    }
+    const upload = await uploadService.uploadImageFromLocalFiles({ files })
+    new SuccessResponse({
+      message: `Upload files successfully`,
+      metadata: upload
+    }).send(res)
+  }
+  async uploadImageFromLocalS3(req: Request, res: Response) {
+    const { file } = req
+    if (!file) {
+      throw new BadRequestError()
+    }
+    const upload = await uploadService.uploadImageFromLocalS3AWS({ file })
+    new SuccessResponse({
+      message: `Upload file S3AWS successfully`,
+      metadata: upload
+    }).send(res)
+  }
 }
 const uploadController = new UploadController()
 export default uploadController
