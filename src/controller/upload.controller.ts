@@ -36,6 +36,9 @@ class UploadController {
     }).send(res)
   }
   async uploadImageFromLocalS3(req: Request, res: Response) {
+    console.log('Controller received request')
+    console.log('Files:', req.files)
+    console.log('File:', req.file)
     const { file } = req
     if (!file) {
       throw new BadRequestError()

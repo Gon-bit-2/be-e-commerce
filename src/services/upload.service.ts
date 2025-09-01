@@ -2,7 +2,8 @@
 
 import cloudinary from '~/config/cloudinary.config'
 import { s3, PutObjectCommand, GetObjectCommand, DeleteObjectCommand } from '~/config/s3.config'
-import { getSignedUrl } from '@aws-sdk/s3-request-presigner'
+// import { getSignedUrl } from '@aws-sdk/s3-request-presigner' // của S3
+import { getSignedUrl } from '@aws-sdk/cloudfront-signer' // của cloudfront
 import { ServerErrorResponse } from '~/middleware/error.middleware'
 import crypto from 'crypto'
 class UploadService {
@@ -70,14 +71,22 @@ class UploadService {
   }
   /////////start upload aws///////
   async uploadImageFromLocalS3AWS({ file }: { file: any }) {
+    console.log('Run form local s3')
+
     try {
       if (!file) {
         throw new Error('No file provided')
       }
 
-      // Validate required environment variables
+      // Validate ALL required environment variables
       if (!process.env.AWS_BUCKET_NAME) {
         throw new Error('AWS_BUCKET_NAME environment variable is not set')
+      }
+      if (!process.env.CLOUDFRONT_PUBLIC_KEY_GROUPS_ID) {
+        throw new Error('CLOUDFRONT_PUBLIC_KEY_GROUPS_ID environment variable is not set')
+      }
+      if (!process.env.CLOUDFRONT_PRIVATE_KEY) {
+        throw new Error('CLOUDFRONT_PRIVATE_KEY environment variable is not set')
       }
       const randomImageName = () => crypto.randomBytes(16).toString('hex')
       const imageName = randomImageName()
@@ -89,15 +98,34 @@ class UploadService {
       })
       const result = await s3.send(command)
 
-      const singedUrl = new GetObjectCommand({
-        Bucket: process.env.AWS_BUCKET_NAME,
-        Key: imageName
+      // const singedUrl = new GetObjectCommand({
+      //   Bucket: process.env.AWS_BUCKET_NAME,
+      //   Key: imageName
+      // })
+      // const url = await getSignedUrl(s3, singedUrl, { expiresIn: 3600 }) // url s3 image upload
+      const urlPublic = `https://d3ngtaw540b0no.cloudfront.net` // url cloudfront
+      const url = await getSignedUrl({
+        url: `${urlPublic}/${imageName}`,
+        keyPairId: process.env.CLOUDFRONT_PUBLIC_KEY_GROUPS_ID!,
+        dateLessThan: new Date(Date.now() + 1000 * 60),
+        privateKey: process.env.CLOUDFRONT_PRIVATE_KEY!
       })
-      const url = await getSignedUrl(s3, singedUrl, { expiresIn: 3600 }) // url image upload
-      return url
-    } catch (error) {
+      return {
+        url: url,
+        result
+      }
+    } catch (error: any) {
+      console.error('Detailed upload error:', {
+        message: error instanceof Error ? error.message : 'Unknown error',
+        stack: error instanceof Error ? error.stack : undefined,
+        name: error instanceof Error ? error.name : 'Unknown',
+        error: error
+      })
+
       if (error instanceof Error) {
-        throw new ServerErrorResponse()
+        throw new ServerErrorResponse(`Upload failed: ${error.message}`)
+      } else {
+        throw new ServerErrorResponse('Upload failed: Unknown error occurred')
       }
     }
   }
