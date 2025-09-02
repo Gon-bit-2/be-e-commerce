@@ -10,7 +10,8 @@ import redisService from '~/services/redis.service'
 import { generateApiKey } from '~/utils/generateApikey'
 
 const app = express()
-const PORT = process.env.PORT_SERVER || 3000
+// const PORT = process.env.PORT_SERVER || 3000
+const PORT = 7979
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 //middleware
 app.use(cors())
