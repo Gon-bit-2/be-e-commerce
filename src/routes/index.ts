@@ -1,5 +1,5 @@
 'use strict'
-import express from 'express'
+import express, { Request, Response } from 'express'
 import accessRouter from './access'
 import productRouter from './product'
 import discountRouter from './discount'
@@ -11,10 +11,16 @@ import uploadRouter from './upload'
 import notificationRouter from './notification'
 import { apiKey, permission } from '~/utils/checkAuth'
 import { pushToLogDiscord } from '~/middleware/discord.middleware'
+import { SuccessResponse } from '~/middleware/success.response'
 
 const router = express.Router()
 //push log to discord
 router.use(pushToLogDiscord)
+router.get('/checkstatus', (req: Request, res: Response) => {
+  new SuccessResponse({
+    message: 'server api oke'
+  }).send(res)
+})
 //check apikey
 router.use(apiKey)
 //check permission
