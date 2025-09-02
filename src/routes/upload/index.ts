@@ -1,6 +1,6 @@
 'use strict'
 
-import express from 'express'
+import express, { Request, Response } from 'express'
 import { uploadDisk, uploadMemory } from '~/config/multer.config'
 import uploadController from '~/controller/upload.controller'
 
