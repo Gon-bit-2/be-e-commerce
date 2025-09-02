@@ -16,7 +16,7 @@ import { SuccessResponse } from '~/middleware/success.response'
 const router = express.Router()
 //push log to discord
 router.use(pushToLogDiscord)
-router.get('/checkstatus', (req: Request, res: Response) => {
+router.get('/v1/api/checkstatus', (req: Request, res: Response) => {
   new SuccessResponse({
     message: 'server api oke'
   }).send(res)
