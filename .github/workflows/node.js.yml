@@ -49,16 +49,17 @@ jobs:
       # Bước 4: Cài đặt các thư viện từ package-lock.json
       - name: Install dependencies
         run: npm ci
-
+      - name: Build
+        run: npm run build # đảm bảo có dist/
       # Bước 5: Khởi động lại ứng dụng bằng PM2 để áp dụng code mới
       # name: Restart PM2 application
       # run: pm2 reload shopDev-be
 
       - name: PM2 start or reload (ecosystem)
         run: |
-          if pm2 describe shopDev-be > /dev/null; then
-          pm2 reload ecosystem.config.ts
+          if npx pm2 describe shopDev-be > /dev/null; then
+          npx pm2 reload ecosystem.config.ts
           else
-          pm2 start ecosystem.config.ts
+          npx pm2 start ecosystem.config.ts
           fi
-          pm2 save
+          npx pm2 save
