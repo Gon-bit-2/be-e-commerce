@@ -1,38 +1,64 @@
-- name: Checkout
-  uses: actions/checkout@v4
+name: Node.js CI/CD shopDev
 
-- name: Use Node
-  uses: actions/setup-node@v4
-  with:
-    node-version: 22.x
-    cache: 'npm'
+on:
+  push:
+    branches: ['master']
 
-- name: Create .env
-  run: |
-    cat <<'EOF' > .env
-    PORT_SERVER=${{ secrets.PORT_SERVER }}
-    DB_USERNAME=${{ secrets.DB_USERNAME }}
-    DB_PASSWORD=${{ secrets.DB_PASSWORD }}
-    AWS_BUCKET_NAME=${{ secrets.AWS_BUCKET_NAME }}
-    AWS_BUCKET_ACCESS_KEY=${{ secrets.AWS_BUCKET_ACCESS_KEY }}
-    AWS_BUCKET_SECRET_KEY=${{ secrets.AWS_BUCKET_SECRET_KEY }}
-    CLOUDFRONT_PUBLIC_KEY_GROUPS_ID=${{ secrets.CLOUDFRONT_PUBLIC_KEY_GROUPS_ID }}
-    CLOUDFRONT_PRIVATE_KEY=${{ secrets.CLOUDFRONT_PRIVATE_KEY }}
-    EOF
-    # Nếu dùng \n escaped:
-    perl -0777 -pe 's/CLOUDFRONT_PRIVATE_KEY=\K.*/(my $v=$&)=~s#\\n#\n#gr/e' -i .env
+jobs:
+  build:
+    runs-on: self-hosted
 
-- name: Install
-  run: npm ci
+    # Chiến lược chỉ định phiên bản Node.js
+    strategy:
+      matrix:
+        node-version: [22.x]
 
-- name: Build
-  run: npm run build
+    steps:
+      # Bước 1: Lấy code mới nhất từ repository về runner (EC2 của bạn)
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-- name: PM2 start or reload (ecosystem)
-  run: |
-    if pm2 describe shopDev-be > /dev/null; then
-      pm2 reload ecosystem.config.js
-    else
-      pm2 start ecosystem.config.js
-    fi
-    pm2 save
+      # Bước 2: Cài đặt phiên bản Node.js được chỉ định
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      # Bước 3: Tạo file .env từ GitHub Secrets
+      # Đây là một bước độc lập, không nằm trong "with" của action khác
+      - name: Create .env file
+        run: |
+          cat <<EOF > .env
+          PORT_SERVER=${{ secrets.PORT_SERVER }}
+          DB_USERNAME=${{ secrets.DB_USERNAME }}
+          DB_PASSWORD=${{ secrets.DB_PASSWORD }}
+          REDIS_USER=${{ secrets.REDIS_USER }}
+          REDIS_PASSWORD=${{ secrets.REDIS_PASSWORD }}
+          CHANNEL_ID=${{ secrets.CHANNEL_ID }}
+          BOT_TOKEN=${{ secrets.BOT_TOKEN }}
+          URI_DOCKER=${{ secrets.URI_DOCKER }}
+          CLOUDINARY_SECRET=${{ secrets.CLOUDINARY_SECRET }}
+          AWS_BUCKET_NAME=${{ secrets.AWS_BUCKET_NAME }}
+          AWS_BUCKET_ACCESS_KEY=${{ secrets.AWS_BUCKET_ACCESS_KEY }}
+          AWS_BUCKET_SECRET_KEY=${{ secrets.AWS_BUCKET_SECRET_KEY }}
+          CLOUDFRONT_PUBLIC_KEY_GROUPS_ID=${{ secrets.CLOUDFRONT_PUBLIC_KEY_GROUPS_ID }}
+          CLOUDFRONT_PRIVATE_KEY="${{ secrets.CLOUDFRONT_PRIVATE_KEY }}"
+          EOF
+
+      # Bước 4: Cài đặt các thư viện từ package-lock.json
+      - name: Install dependencies
+        run: npm ci
+
+      # Bước 5: Khởi động lại ứng dụng bằng PM2 để áp dụng code mới
+      # name: Restart PM2 application
+      # run: pm2 reload shopDev-be
+
+      - name: PM2 start or reload (ecosystem)
+        run: |
+          if pm2 describe shopDev-be > /dev/null; then
+          pm2 reload ecosystem.config.ts
+          else
+          pm2 start ecosystem.config.ts
+          fi
+          pm2 save
