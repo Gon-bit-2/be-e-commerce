@@ -3,11 +3,11 @@ module.exports = {
   apps: [
     {
       name: 'shopDev-be',
-      script: './dist/index.js', // Đường dẫn tới file JS sau khi build
+      script: './src/index.ts', // <-- Trỏ thẳng vào file .ts
+      interpreter: './node_modules/.bin/tsx', // <-- Dùng tsx để chạy
       instances: 1,
       autorestart: true,
-      watch: false,
-      max_memory_restart: '1.5G'
+      watch: false
     }
   ]
 }
