@@ -46,9 +46,12 @@ jobs:
           CLOUDFRONT_PRIVATE_KEY="${{ secrets.CLOUDFRONT_PRIVATE_KEY }}"
           EOF
 
+      - name: Clean npm cache
+        run: npm cache clean --force
       # Bước 4: Cài đặt các thư viện từ package-lock.json
       - name: Install dependencies
         run: npm ci
+
       - name: Build
         run: npm run build # đảm bảo có dist/
       # Bước 5: Khởi động lại ứng dụng bằng PM2 để áp dụng code mới
