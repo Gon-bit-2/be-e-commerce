@@ -45,24 +45,10 @@ jobs:
           CLOUDFRONT_PUBLIC_KEY_GROUPS_ID=${{ secrets.CLOUDFRONT_PUBLIC_KEY_GROUPS_ID }}
           CLOUDFRONT_PRIVATE_KEY="${{ secrets.CLOUDFRONT_PRIVATE_KEY }}"
           EOF
-
-      - name: Clean npm cache
-        run: npm cache clean --force
       # Bước 4: Cài đặt các thư viện từ package-lock.json
       - name: Install dependencies
         run: npm ci
 
-      - name: Build
-        run: npm run build # đảm bảo có dist/
       # Bước 5: Khởi động lại ứng dụng bằng PM2 để áp dụng code mới
-      # name: Restart PM2 application
-      # run: pm2 reload shopDev-be
-
-      - name: PM2 start or reload (ecosystem)
-        run: |
-          if npx pm2 describe shopDev-be > /dev/null; then
-          npx pm2 reload ecosystem.config.ts
-          else
-          npx pm2 start ecosystem.config.ts
-          fi
-          npx pm2 save
+      - name: Restart PM2 application
+        run: pm2 reload shopDev-be
