@@ -50,7 +50,7 @@ jobs:
         run: npm ci
       # THÊM BƯỚC NÀY VÀO
       - name: Build application
-        run: npm run build
+        run: NODE_OPTIONS="--max-old-space-size=1536" npm run build
       # Bước 5: Khởi động lại ứng dụng bằng PM2 để áp dụng code mới
       - name: Start or Reload PM2 application
         run: pm2 startOrReload ecosystem.config.js --name shopDev-bee
