@@ -7,11 +7,12 @@ import 'dotenv/config'
 import database from '~/db/database'
 import router from '~/routes'
 import redisService from '~/services/redis.service'
+import 'dotenv/config'
 import { generateApiKey } from '~/utils/generateApikey'
 
 const app = express()
 // const PORT = process.env.PORT_SERVER || 3000
-const PORT = 7979
+const PORT = process.env.PORT_SERVER || 7979
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 //middleware
 app.use(cors())
