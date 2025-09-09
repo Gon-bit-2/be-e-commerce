@@ -1,10 +1,11 @@
 'use strict'
 
 import database from '~/db/database'
-import { BadRequestError } from '~/middleware/error.middleware'
+import { BadRequestError, NotFoundError } from '~/middleware/error.middleware'
 import { checkProductByServer, findCartId } from '~/model/repositories/cart.repo'
 import discountService from '~/services/discount.service'
 import redisService from '~/services/redis.service'
+import { convertToObjectIdMongo } from '~/utils'
 export interface ProductItem {
   price: number
   quantity: number
@@ -114,7 +115,7 @@ class CheckoutService {
           discount_code: shop_discounts[0].codeId,
           userId,
           shopId,
-          products: checkProductServer
+          products: checkProductServer as ProductItem[]
         })
         //tong tien discount giam gia
         checkout_order.totalDiscount += discount
@@ -147,11 +148,11 @@ class CheckoutService {
     console.log('[1]', products)
     const acquireProduct = []
     for (let i = 0; i < products.length; i++) {
-      const { productId, quantity } = products[i]
+      const { productId, quantity } = products[i] as { productId: string; quantity: number }
       const keyLock = await redisService.acquireLock(productId, quantity, cartId)
       acquireProduct.push(keyLock ? true : false)
       if (keyLock) {
-        await redisService.releaseLock(keyLock, cartId)
+        await redisService.releaseLock(keyLock, cartId) // giải phóng lock để
       }
     }
     //check neu co 1 san pham het hang trong kho
@@ -168,15 +169,77 @@ class CheckoutService {
     //nếu insert success thi xóa product in cart
     if (newOrder) {
       //
+      await database.cart.updateOne(
+        { cart_userId: userId, cart_state: 'active' },
+        {
+          $pull: {
+            cart_product: {
+              productId: {
+                $in: products.map((product) => product?.productId)
+              }
+            }
+          }
+        }
+      )
     }
     return newOrder
   }
   /* Query Order [User] */
-  async getOrderByUser() {}
+  async getOrderByUser({ userId, status }: { userId: string; status: string }, { skip = 0, limit = 10 }) {
+    const orders = await database.order
+      .find({ order_userId: userId, order_trackingNumber: status })
+      .sort({ createdAt: -1 })
+      .skip(skip)
+      .limit(limit)
+      .lean()
+
+    return {
+      orders,
+      total: await database.order.countDocuments({ order_userId: userId })
+    }
+  }
   /* Query Order usesing ID [User] */
-  async getOneOrderByUser() {}
+  async getOneOrderByUser({ orderId, userId }: { orderId: string; userId: string }) {
+    const orderByUser = await database.order.findOne({ _id: convertToObjectIdMongo(orderId), order_userId: userId })
+    if (!orderByUser) {
+      throw new NotFoundError('Order not found for user !!')
+    }
+    return orderByUser
+  }
   /* cancel Order [User] */
-  async cancelOrderByUser() {}
+  async cancelOrderByUser({ orderId, userId }: { orderId: string; userId: string }) {
+    const orderByUser = await database.order.findOne({ _id: convertToObjectIdMongo(orderId), order_userId: userId })
+    if (!orderByUser) {
+      throw new NotFoundError('Order not found for user !!')
+    }
+    if (orderByUser.order_trackingNumber === 'pending' || orderByUser.order_trackingNumber === 'confirmed') {
+      const updatedOrder = await database.order.findByIdAndUpdate(
+        orderByUser._id,
+        {
+          $set: {
+            order_trackingNumber: 'cancelled'
+          }
+        },
+        { new: true }
+      )
+      // hoàn lại tồn kho
+      for (const shopOrder of orderByUser.order_products) {
+        for (const product of shopOrder.item_products) {
+          await database.inventories.updateOne(
+            { inven_productId: convertToObjectIdMongo(product.productId) },
+            {
+              $inc: { inven_stock: product.quantity },
+              $pull: {
+                inven_reservations: { cartId: orderByUser._id }
+              }
+            }
+          )
+        }
+      }
+      return updatedOrder
+    }
+    throw new BadRequestError('Order is not pending or confirmed')
+  }
   /* update Order [User|Admin] */
   async updateOrderByStatusByShop() {}
 }

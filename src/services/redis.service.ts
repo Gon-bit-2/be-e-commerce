@@ -71,7 +71,7 @@ class RedisService {
     }
   }
   /**
-   * Thử giành quyền khóa một tài nguyên.
+   * Thử dành quyền khóa một tài nguyên.
    * @param {string} productId - ID của sản phẩm cần khóa.
    * @param {string} cartId - ID của giỏ hàng, dùng làm giá trị của lock.
    * @returns {string|null} - Trả về "key" của lock nếu thành công, ngược lại trả về null.

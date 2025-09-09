@@ -1,6 +1,7 @@
 'use strict'
 
 import { model, Schema, Types } from 'mongoose'
+import { ProductItem } from 'src/services/checkout.service'
 const DOCUMENT_NAME = 'Order'
 const COLLECTION_NAME = 'Orders'
 export type OrderStatus = 'pending' | 'confirmed' | 'shipped' | 'cancelled' | 'delivered'

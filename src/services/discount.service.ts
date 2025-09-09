@@ -11,6 +11,7 @@ import {
 } from '~/model/repositories/discount.repo'
 import { findAllProducts } from '~/model/repositories/product.repo'
 import { convertToObjectIdMongo } from '~/utils'
+import { ProductItem } from './checkout.service'
 
 /*
 1:gen discount code [shop/admin]
@@ -180,7 +181,7 @@ class DiscountService {
     userId: string
     shopId: string
     discount_code: string
-    products: any[]
+    products: ProductItem[]
   }) {
     const foundDiscount = await checkDiscountExists({
       model: database.discount,
